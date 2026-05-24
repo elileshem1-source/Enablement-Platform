@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#04030a" />
+<title>NOVA / 7 — Holographic Operating Universe</title>
+<meta name="description" content="NOVA/7 is a holographic operating universe: cinematic particle simulations, volumetric lighting, and floating glassmorphism interfaces for the next era of computation." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" />
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="boot">
+
+  <!-- ─────────────────────────  BOOT SEQUENCE  ───────────────────────── -->
+  <div class="boot-screen" id="bootScreen" aria-hidden="false">
+    <div class="boot-grid"></div>
+    <div class="boot-core">
+      <svg class="boot-ring" viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          <linearGradient id="ringGrad" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#7c5cff"/>
+            <stop offset=".5" stop-color="#22d3ee"/>
+            <stop offset="1" stop-color="#ff5cf0"/>
+          </linearGradient>
+        </defs>
+        <circle cx="100" cy="100" r="84" fill="none" stroke="url(#ringGrad)" stroke-width="1.2" opacity=".6"/>
+        <circle cx="100" cy="100" r="70" fill="none" stroke="url(#ringGrad)" stroke-width=".8" opacity=".45"/>
+        <circle cx="100" cy="100" r="56" fill="none" stroke="url(#ringGrad)" stroke-width=".6" opacity=".35"/>
+        <circle class="ring-pulse" cx="100" cy="100" r="42" fill="none" stroke="#9be7ff" stroke-width="1" />
+      </svg>
+      <div class="boot-mono">
+        <div class="boot-line">// NOVA/7 KERNEL · cold-boot</div>
+        <div class="boot-line">// quantum substrate <span class="ok">online</span></div>
+        <div class="boot-line">// volumetric optics <span class="ok">calibrated</span></div>
+        <div class="boot-line">// authenticating observer <span class="dot">...</span></div>
+        <div class="boot-progress"><span></span></div>
+        <div class="boot-status" id="bootStatus">initializing holographic field</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────  AMBIENT LAYERS  ──────────────────────── -->
+  <div class="mesh-bg" aria-hidden="true">
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+    <div class="orb orb-d"></div>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="scanline" aria-hidden="true"></div>
+  <canvas id="bgfx" class="bgfx" aria-hidden="true"></canvas>
+
+  <!-- custom cursor -->
+  <div class="cursor" id="cursor" aria-hidden="true">
+    <div class="cursor-dot"></div>
+    <div class="cursor-ring"></div>
+  </div>
+
+  <!-- ─────────────────────────  NAV  ─────────────────────────────────── -->
+  <header class="nav">
+    <a class="brand" href="#top" data-magnet>
+      <span class="brand-mark">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <defs>
+            <linearGradient id="brandG" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0" stop-color="#9be7ff"/>
+              <stop offset="1" stop-color="#c08bff"/>
+            </linearGradient>
+          </defs>
+          <path d="M6 28 L6 12 L20 28 L20 12 M26 12 L34 12 L26 28 L34 28" fill="none" stroke="url(#brandG)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="brand-text">NOVA<span class="brand-slash">/</span>7</span>
+    </a>
+
+    <nav class="nav-links" aria-label="primary">
+      <a href="#vision" data-magnet><span>01</span>Vision</a>
+      <a href="#systems" data-magnet><span>02</span>Systems</a>
+      <a href="#engine" data-magnet><span>03</span>Engine</a>
+      <a href="#signal" data-magnet><span>04</span>Signal</a>
+      <a href="#transmit" data-magnet><span>05</span>Transmit</a>
+    </nav>
+
+    <div class="nav-aux">
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span class="status-text">LINK · STABLE</span>
+        <span class="status-coord" id="navCoord">42.001°N · 7.318°W</span>
+      </div>
+      <button class="btn-ghost" data-magnet>
+        <span>Request Access</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ─────────────────────────  HUD CHROME  ──────────────────────────── -->
+  <div class="hud-corners" aria-hidden="true">
+    <span class="cc tl"></span><span class="cc tr"></span>
+    <span class="cc bl"></span><span class="cc br"></span>
+  </div>
+  <aside class="rail rail-left" aria-hidden="true">
+    <div class="rail-tick">N <b>01</b></div>
+    <div class="rail-tick">N <b>02</b></div>
+    <div class="rail-tick">N <b>03</b></div>
+    <div class="rail-tick">N <b>04</b></div>
+    <div class="rail-line"><span class="rail-fill" id="railFill"></span></div>
+  </aside>
+  <aside class="rail rail-right" aria-hidden="true">
+    <div class="telemetry">
+      <div class="tel-row"><span>FPS</span><b id="telFps">—</b></div>
+      <div class="tel-row"><span>PARTICLES</span><b id="telPart">24,576</b></div>
+      <div class="tel-row"><span>FLUX</span><b id="telFlux">0.000</b></div>
+      <div class="tel-row"><span>OBSERVER</span><b id="telObs">∅</b></div>
+    </div>
+    <div class="vert-text">NOVA · CHANNEL 07 · HOLOGRAPHIC TRANSPORT LAYER</div>
+  </aside>
+
+  <!-- ─────────────────────────  MAIN  ────────────────────────────────── -->
+  <main id="top">
+
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="hero">
+      <div class="hero-watermark" aria-hidden="true">NOVA · 07</div>
+
+      <div class="hero-tag">
+        <span class="hero-tag-dot"></span>
+        <span>v7.0 · cinematic kernel · spring transmission</span>
+      </div>
+
+      <h1 class="hero-title" data-split>
+        <span class="line"><span class="word">A</span> <span class="word">holographic</span></span>
+        <span class="line"><span class="word italic">operating</span> <span class="word">universe</span>,</span>
+        <span class="line"><span class="word">rendered</span> <span class="word">in</span> <span class="word">real</span> <span class="word">time.</span></span>
+      </h1>
+
+      <p class="hero-sub">
+        NOVA/7 is an experimental interface layer that dissolves the boundary between
+        software and atmosphere. Volumetric fields, reactive geometry, and a quiet
+        intelligence that watches the light bend around you.
+      </p>
+
+      <div class="hero-actions">
+        <button class="btn-primary" data-magnet>
+          <span class="btn-glow"></span>
+          <span class="btn-label">Enter the field</span>
+          <span class="btn-arrow">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </button>
+        <button class="btn-link" data-magnet>
+          <span class="play">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+          </span>
+          <span>Watch transmission · 02:14</span>
+        </button>
+      </div>
+
+      <!-- Holographic floating card -->
+      <div class="holo-card" id="holoCard" data-tilt>
+        <div class="holo-card-inner">
+          <div class="holo-card-head">
+            <div class="hc-id">
+              <span class="hc-chip">SIGNAL · 0xA9F2</span>
+              <span class="hc-line"></span>
+              <span class="hc-time" id="hcTime">00:00:00</span>
+            </div>
+            <div class="hc-dots"><i></i><i></i><i></i></div>
+          </div>
+
+          <div class="holo-card-body">
+            <div class="hc-figure">
+              <svg viewBox="0 0 220 220" class="hc-orbit" aria-hidden="true">
+                <defs>
+                  <radialGradient id="planetG" cx=".35" cy=".35">
+                    <stop offset="0" stop-color="#dff6ff"/>
+                    <stop offset=".5" stop-color="#7c5cff"/>
+                    <stop offset="1" stop-color="#1a0b3a"/>
+                  </radialGradient>
+                  <linearGradient id="orbG" x1="0" x2="1">
+                    <stop offset="0" stop-color="#22d3ee" stop-opacity=".0"/>
+                    <stop offset=".5" stop-color="#22d3ee" stop-opacity=".9"/>
+                    <stop offset="1" stop-color="#ff5cf0" stop-opacity=".0"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="110" cy="110" r="44" fill="url(#planetG)"/>
+                <ellipse cx="110" cy="110" rx="92" ry="28" fill="none" stroke="url(#orbG)" stroke-width="1.1"/>
+                <ellipse cx="110" cy="110" rx="76" ry="56" fill="none" stroke="#9be7ff" stroke-width=".6" opacity=".5"/>
+                <circle class="orb-moon" cx="202" cy="110" r="3" fill="#ff5cf0"/>
+                <circle class="orb-moon-2" cx="110" cy="54" r="2" fill="#9be7ff"/>
+              </svg>
+              <div class="hc-glow"></div>
+            </div>
+
+            <div class="hc-meta">
+              <div class="hc-row"><span>locale</span><b>EU · 7</b></div>
+              <div class="hc-row"><span>vector</span><b>+0.142, −0.318, +0.907</b></div>
+              <div class="hc-row"><span>entropy</span><b id="hcEntropy">0.418</b></div>
+              <div class="hc-row"><span>observer</span><b>aligned</b></div>
+              <div class="hc-bar">
+                <span class="hc-bar-fill" id="hcBar"></span>
+              </div>
+              <div class="hc-tags">
+                <span>holographic</span><span>volumetric</span><span>reactive</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span class="hc-edge"></span>
+      </div>
+
+      <!-- Floating chip -->
+      <div class="float-chip chip-a" data-float>
+        <i></i><span>luminous · cluster online</span>
+      </div>
+      <div class="float-chip chip-b" data-float>
+        <span class="chip-num">07</span>
+        <span class="chip-text">cinematic<br/>kernel</span>
+      </div>
+
+      <div class="hero-scroll">
+        <span class="hs-line"></span>
+        <span>scroll · to traverse</span>
+      </div>
+    </section>
+
+    <!-- ============ VISION ============ -->
+    <section class="vision" id="vision">
+      <div class="section-head">
+        <span class="section-eyebrow"><i></i>chapter · 01</span>
+        <h2 class="section-title">
+          A surface that <em>breathes</em>, a machine that <em>listens</em>.
+        </h2>
+        <p class="section-sub">
+          We designed NOVA/7 as if light itself were the interface — a quiet medium that
+          carries intention. Move your eye, and the world rearranges. Move your hand,
+          and the architecture answers in soft, glowing harmonics.
+        </p>
+      </div>
+
+      <div class="pillars">
+        <article class="pillar">
+          <div class="pillar-num">01</div>
+          <div class="pillar-glyph">
+            <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="14" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width=".8" opacity=".5"/><circle cx="32" cy="32" r="3" fill="currentColor"/></svg>
+          </div>
+          <h3>Volumetric Surface</h3>
+          <p>A continuous field of light particles renders every interface as depth — no edges, only layers.</p>
+        </article>
+
+        <article class="pillar">
+          <div class="pillar-num">02</div>
+          <div class="pillar-glyph">
+            <svg viewBox="0 0 64 64"><path d="M8 48 L24 16 L40 40 L56 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="16" r="2.4" fill="currentColor"/><circle cx="40" cy="40" r="2.4" fill="currentColor"/></svg>
+          </div>
+          <h3>Reactive Geometry</h3>
+          <p>Every motion you make becomes a vector — the geometry deforms, glows, and remembers.</p>
+        </article>
+
+        <article class="pillar">
+          <div class="pillar-num">03</div>
+          <div class="pillar-glyph">
+            <svg viewBox="0 0 64 64"><rect x="14" y="14" width="36" height="36" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M14 32 L50 32 M32 14 L32 50" stroke="currentColor" stroke-width=".8" opacity=".5"/></svg>
+          </div>
+          <h3>Cinematic Compositor</h3>
+          <p>Scenes resolve like a film — chromatic aberration, depth-of-field, and softly-blooming highlights.</p>
+        </article>
+
+        <article class="pillar">
+          <div class="pillar-num">04</div>
+          <div class="pillar-glyph">
+            <svg viewBox="0 0 64 64"><path d="M32 8 L56 22 L56 42 L32 56 L8 42 L8 22 Z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M32 8 L32 32 L8 22 M32 32 L56 22 M32 32 L32 56" stroke="currentColor" stroke-width=".8" opacity=".55"/></svg>
+          </div>
+          <h3>Ambient Intelligence</h3>
+          <p>A quiet model that watches the room and recomposes the world in a single luminous gesture.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ SYSTEMS ============ -->
+    <section class="systems" id="systems">
+      <div class="section-head">
+        <span class="section-eyebrow"><i></i>chapter · 02</span>
+        <h2 class="section-title">Six luminous <em>systems</em>, one fluid universe.</h2>
+        <p class="section-sub">
+          NOVA/7 ships with six interconnected modules — each a self-contained
+          environment, each capable of speaking the others' language.
+        </p>
+      </div>
+
+      <div class="systems-grid">
+        <article class="sys-card" style="--accent:#7c5cff;--accent-2:#22d3ee">
+          <header><span>01 ·</span><b>Prism</b></header>
+          <div class="sys-visual sys-visual-1"></div>
+          <h3>Light Compositor</h3>
+          <p>Real-time spectral mixing across every surface, with sub-millisecond bloom.</p>
+          <footer><span>module · core</span><span class="sys-arrow">→</span></footer>
+        </article>
+
+        <article class="sys-card" style="--accent:#22d3ee;--accent-2:#9be7ff">
+          <header><span>02 ·</span><b>Tide</b></header>
+          <div class="sys-visual sys-visual-2"></div>
+          <h3>Fluid Motion Engine</h3>
+          <p>Continuous, mass-aware animation that simulates inertia, resistance and grace.</p>
+          <footer><span>module · motion</span><span class="sys-arrow">→</span></footer>
+        </article>
+
+        <article class="sys-card" style="--accent:#ff5cf0;--accent-2:#7c5cff">
+          <header><span>03 ·</span><b>Vellum</b></header>
+          <div class="sys-visual sys-visual-3"></div>
+          <h3>Glass Compositor</h3>
+          <p>Layered frosted panels with adaptive depth — content reads through atmosphere.</p>
+          <footer><span>module · ui</span><span class="sys-arrow">→</span></footer>
+        </article>
+
+        <article class="sys-card" style="--accent:#ffd166;--accent-2:#ff5cf0">
+          <header><span>04 ·</span><b>Ember</b></header>
+          <div class="sys-visual sys-visual-4"></div>
+          <h3>Volumetric Lighting</h3>
+          <p>Rays of light that you can almost taste — godrays, soft caustics, ambient breath.</p>
+          <footer><span>module · optics</span><span class="sys-arrow">→</span></footer>
+        </article>
+
+        <article class="sys-card" style="--accent:#9be7ff;--accent-2:#7c5cff">
+          <header><span>05 ·</span><b>Aria</b></header>
+          <div class="sys-visual sys-visual-5"></div>
+          <h3>Spatial Audio Field</h3>
+          <p>An ambient score that follows your gaze — granular, generative, never repeating.</p>
+          <footer><span>module · sound</span><span class="sys-arrow">→</span></footer>
+        </article>
+
+        <article class="sys-card" style="--accent:#c08bff;--accent-2:#ff5cf0">
+          <header><span>06 ·</span><b>Helix</b></header>
+          <div class="sys-visual sys-visual-6"></div>
+          <h3>Ambient Intelligence</h3>
+          <p>A quiet model that watches the room and composes the next frame for you.</p>
+          <footer><span>module · cognition</span><span class="sys-arrow">→</span></footer>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ ENGINE ============ -->
+    <section class="engine" id="engine">
+      <div class="engine-grid">
+        <div class="engine-copy">
+          <span class="section-eyebrow"><i></i>chapter · 03</span>
+          <h2 class="section-title">The <em>engine</em> hums in <em>seven</em> dimensions.</h2>
+          <p class="section-sub">
+            Beneath every surface, a quiet computation: a particle field of 24,576 voxels
+            simulating mass, charge and intention in real time. NOVA/7 was tuned to
+            disappear — until you reach for it.
+          </p>
+
+          <ul class="engine-list">
+            <li><span class="el-num">001</span><span class="el-text">Sub-frame compositing pipeline · 240 Hz target</span></li>
+            <li><span class="el-num">002</span><span class="el-text">Adaptive volumetric resolver · 0.4 ms / pass</span></li>
+            <li><span class="el-num">003</span><span class="el-text">Generative ambient score · 7-voice diffusion</span></li>
+            <li><span class="el-num">004</span><span class="el-text">Holographic depth buffer · 1024 luminous planes</span></li>
+          </ul>
+
+          <div class="engine-meters">
+            <div class="meter">
+              <header><span>luminous flux</span><b>92%</b></header>
+              <div class="meter-bar"><span style="width:92%"></span></div>
+            </div>
+            <div class="meter">
+              <header><span>field stability</span><b>87%</b></header>
+              <div class="meter-bar"><span style="width:87%"></span></div>
+            </div>
+            <div class="meter">
+              <header><span>observer presence</span><b>aligned</b></header>
+              <div class="meter-bar"><span style="width:73%"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="engine-stage" data-tilt>
+          <div class="stage-frame">
+            <div class="stage-frame-head">
+              <span class="sfh-id">/engine · core view</span>
+              <span class="sfh-dot"></span>
+              <span class="sfh-dot"></span>
+              <span class="sfh-dot"></span>
+            </div>
+            <div class="stage-scene">
+              <div class="ring-3d">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="core-3d">
+                <span class="c-pulse"></span>
+                <span class="c-ring"></span>
+                <span class="c-ring c2"></span>
+                <span class="c-ring c3"></span>
+              </div>
+              <svg class="stage-grid" viewBox="0 0 400 400" aria-hidden="true">
+                <defs>
+                  <pattern id="sg" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M0 0H40M0 0V40" stroke="#9be7ff" stroke-width=".4" opacity=".25"/>
+                  </pattern>
+                </defs>
+                <rect width="400" height="400" fill="url(#sg)"/>
+              </svg>
+              <div class="stage-haze"></div>
+            </div>
+            <div class="stage-frame-foot">
+              <span>NOVA · ENGINE · 7.0</span>
+              <span id="engineCoord">δ 0.000 / θ 0.000</span>
+              <span>FRAME 048217</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SIGNAL / STATS ============ -->
+    <section class="signal" id="signal">
+      <div class="section-head center">
+        <span class="section-eyebrow"><i></i>chapter · 04</span>
+        <h2 class="section-title">A constellation, already <em>in motion</em>.</h2>
+      </div>
+
+      <div class="stats">
+        <div class="stat" data-count="24576" data-suffix="">
+          <b class="stat-num">0</b>
+          <span class="stat-label">luminous voxels<br/>per frame</span>
+        </div>
+        <div class="stat" data-count="240" data-suffix=" Hz">
+          <b class="stat-num">0</b>
+          <span class="stat-label">target<br/>compositor rate</span>
+        </div>
+        <div class="stat" data-count="7" data-suffix="·D">
+          <b class="stat-num">0</b>
+          <span class="stat-label">simulated<br/>dimensions</span>
+        </div>
+        <div class="stat" data-count="412" data-suffix="ms">
+          <b class="stat-num">0</b>
+          <span class="stat-label">first<br/>luminous frame</span>
+        </div>
+      </div>
+
+      <div class="quote">
+        <svg class="quote-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M18 44V28h-8a16 16 0 0116-16v8a8 8 0 00-8 8h8v16zM50 44V28h-8a16 16 0 0116-16v8a8 8 0 00-8 8h8v16z" fill="currentColor"/></svg>
+          <p>It feels less like a piece of software and more like standing inside a quiet, breathing weather system.</p>
+        <footer>— Iris Calder, <i>field correspondent</i></footer>
+      </div>
+    </section>
+
+    <!-- ============ TRANSMIT / CTA ============ -->
+    <section class="transmit" id="transmit">
+      <div class="transmit-stage">
+        <div class="transmit-watermark" aria-hidden="true">// open channel</div>
+
+        <div class="transmit-copy">
+          <span class="section-eyebrow"><i></i>chapter · 05</span>
+          <h2 class="section-title">Step inside the <em>field</em>.</h2>
+          <p class="section-sub">
+            NOVA/7 is opening a limited channel to a handful of early observers. Bring a
+            quiet question. We'll bring the rest of the universe.
+          </p>
+
+          <form class="transmit-form" onsubmit="event.preventDefault(); this.classList.add('sent');">
+            <label class="tf-field">
+              <span>handle</span>
+              <input type="text" placeholder="aurora.cassini" autocomplete="off" />
+            </label>
+            <label class="tf-field">
+              <span>signal · channel</span>
+              <input type="email" placeholder="you@horizon.world" autocomplete="off" required />
+            </label>
+            <button type="submit" class="btn-primary tf-submit" data-magnet>
+              <span class="btn-glow"></span>
+              <span class="btn-label">Open the channel</span>
+              <span class="btn-arrow">
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </button>
+            <p class="tf-sent">// transmission received · stand by</p>
+          </form>
+        </div>
+
+        <div class="transmit-aside" data-tilt>
+          <div class="ta-head">
+            <span class="ta-chip">SECURE · CHANNEL</span>
+            <span class="ta-id">// NV-7-EU</span>
+          </div>
+          <div class="ta-waves">
+            <svg viewBox="0 0 320 120" preserveAspectRatio="none">
+              <path id="wave1" d="M0 60 Q40 20 80 60 T160 60 T240 60 T320 60" fill="none" stroke="#22d3ee" stroke-width="1.4"/>
+              <path id="wave2" d="M0 60 Q40 80 80 60 T160 60 T240 60 T320 60" fill="none" stroke="#ff5cf0" stroke-width="1" opacity=".7"/>
+              <path id="wave3" d="M0 60 Q40 100 80 60 T160 60 T240 60 T320 60" fill="none" stroke="#9be7ff" stroke-width=".8" opacity=".5"/>
+            </svg>
+          </div>
+          <div class="ta-meta">
+            <div><span>encryption</span><b>volumetric · 7</b></div>
+            <div><span>latency</span><b id="taLat">14 ms</b></div>
+            <div><span>observers</span><b>0143 / 2048</b></div>
+          </div>
+          <div class="ta-bars">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ─────────────────────────  FOOTER  ─────────────────────────────── -->
+  <footer class="foot">
+    <div class="foot-row">
+      <div class="foot-brand">
+        <span class="brand-mark">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M6 28 L6 12 L20 28 L20 12 M26 12 L34 12 L26 28 L34 28" fill="none" stroke="url(#brandG)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>NOVA<span class="brand-slash">/</span>7</span>
+      </div>
+      <p>An experimental operating universe.<br/>Rendered in light, shipped in silence.</p>
+    </div>
+    <div class="foot-row foot-links">
+      <div><b>universe</b><a>vision</a><a>systems</a><a>engine</a></div>
+      <div><b>signal</b><a>journal</a><a>field notes</a><a>transmissions</a></div>
+      <div><b>observers</b><a>press kit</a><a>residency</a><a>contact</a></div>
+    </div>
+    <div class="foot-row foot-meta">
+      <span>© 2087 · NOVA / 7</span>
+      <span class="foot-coord" id="footCoord">42.001°N · 7.318°W · alt 184m</span>
+      <span>// crafted in low orbit</span>
+    </div>
+  </footer>
+
+  <!-- ─────────────────────────  THREE.JS / FIELD  ───────────────────── -->
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+  <script type="module" src="./field.js"></script>
+  <script src="./ui.js" defer></script>
+</body>
+</html>
