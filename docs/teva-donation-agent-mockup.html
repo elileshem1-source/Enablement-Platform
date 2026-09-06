@@ -1,0 +1,783 @@
+<title>Donation Opportunity Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F3F4F1; --surface:#FFFFFF; --sunken:#EBEDE8; --ink:#424242; --ink-2:#6b6f68; --ink-3:#9a9f98; --line:#dcdfd8; --line-2:#c9cdc5;
+  --green:#00A03B; --green-ink:#00803a; --green-tint:#e4f3ea; --green-deep:#006d2b;
+  --blue:#00567A; --teal:#3C7E79; --cyan:#00ACA8; --lime:#AFCB37; --magenta:#AA198D;
+  --c1:#00A03B; --c2:#1B6FA8; --ref:#8E9590; --on-green:#FFFFFF;
+  --good:#1f8a3b; --good-tint:#e3f3e8; --warn:#b3640a; --warn-tint:#fdf0dd; --crit:#c8323f; --crit-tint:#fbe4e6; --info:#1B6FA8; --info-tint:#e2eef8;
+  --shadow:0 1px 2px rgba(20,30,20,.06),0 4px 16px rgba(20,30,20,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#131614; --surface:#1c201d; --sunken:#171a18; --ink:#e4e7e1; --ink-2:#a8ada4; --ink-3:#767b73; --line:#2c312d; --line-2:#3b413c;
+    --green:#23A857; --green-ink:#56d183; --green-tint:#1b2f22; --green-deep:#8fe3ac;
+    --blue:#4aa3cf; --teal:#63b3ac; --cyan:#3fd0cb; --lime:#c3dc5a; --magenta:#d05cc0;
+    --c1:#23A857; --c2:#3D8EC4; --ref:#7E857F; --on-green:#0b1a10;
+    --good:#4fcf7c; --good-tint:#1b2f22; --warn:#f0b46a; --warn-tint:#33270f; --crit:#ff7c86; --crit-tint:#3a1c1f; --info:#6fb6e6; --info-tint:#16283a;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#131614; --surface:#1c201d; --sunken:#171a18; --ink:#e4e7e1; --ink-2:#a8ada4; --ink-3:#767b73; --line:#2c312d; --line-2:#3b413c;
+  --green:#23A857; --green-ink:#56d183; --green-tint:#1b2f22; --green-deep:#8fe3ac;
+  --blue:#4aa3cf; --teal:#63b3ac; --cyan:#3fd0cb; --lime:#c3dc5a; --magenta:#d05cc0;
+  --c1:#23A857; --c2:#3D8EC4; --ref:#7E857F; --on-green:#0b1a10;
+  --good:#4fcf7c; --good-tint:#1b2f22; --warn:#f0b46a; --warn-tint:#33270f; --crit:#ff7c86; --crit-tint:#3a1c1f; --info:#6fb6e6; --info-tint:#16283a;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:"Figtree",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* shell */
+.app{display:grid;grid-template-rows:52px 1fr;height:100vh;min-height:600px}
+.top{display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px}
+.brand .dot{width:26px;height:26px;border-radius:7px;background:var(--green);display:grid;place-items:center;color:#fff;font-size:13px;font-weight:700}
+.brand .sub{font-weight:400;color:var(--ink-2);font-size:12px;margin-left:4px}
+.ctx{display:flex;gap:8px;margin-left:auto;align-items:center;flex-wrap:wrap}
+.ctx select{background:var(--sunken);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12.5px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.pill.example{background:var(--warn-tint);color:var(--warn)}
+.pill.preview{background:var(--info-tint);color:var(--info)}
+.pill.sync{background:var(--sunken);color:var(--ink-2)}
+.pill.sync.on{background:var(--good-tint);color:var(--good)}
+.pill i{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+
+.body{display:grid;grid-template-columns:200px 1fr 360px;min-height:0}
+.body.agent-hidden{grid-template-columns:200px 1fr 0}
+.body.agent-hidden .agent{display:none}
+@media (max-width:1100px){.body{grid-template-columns:56px 1fr 340px}.body.agent-hidden{grid-template-columns:56px 1fr 0}.nav .lbl{display:none}.nav button{justify-content:center;padding:10px 0}}
+@media (max-width:820px){.body{grid-template-columns:56px 1fr 0}.body .agent{display:none}.body.agent-open{grid-template-columns:56px 0 1fr}.body.agent-open .main{display:none}.body.agent-open .agent{display:flex}}
+
+.nav{background:var(--surface);border-right:1px solid var(--line);padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:9px 10px;color:var(--ink-2);font-weight:500}
+.nav button:hover{background:var(--sunken)}
+.nav button.on{background:var(--green-tint);color:var(--green-ink)}
+.nav .step{font-size:10.5px;font-weight:500;color:var(--ink-3);margin-left:auto}
+.nav button.on .step{color:var(--green-ink)}
+.nav .ico{width:18px;height:18px;flex:none}
+.nav .spacer{flex:1}
+.nav .foot{font-size:11px;color:var(--ink-3);padding:8px 10px;line-height:1.4}
+@media (max-width:1100px){.nav .step,.nav .foot{display:none}}
+
+.main{overflow:auto;padding:22px 26px 60px;min-width:0}
+.view{display:none;max-width:1100px}
+.view.on{display:block}
+.vh{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.vh h1{font-size:21px;font-weight:600;margin:0 0 2px;letter-spacing:-.01em}
+.vh p{margin:0;color:var(--ink-2);max-width:70ch}
+.vh .stepcode{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--green-ink);font-weight:500;letter-spacing:.04em}
+
+/* summary strip */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:600;margin:0 0 4px}
+.tile .v{font-size:22px;font-weight:600;margin:0;line-height:1.1;letter-spacing:-.01em}
+.tile .v small{font-size:12px;font-weight:500;color:var(--ink-2);margin-left:4px;letter-spacing:0}
+.tile .d{font-size:12px;color:var(--ink-2);margin:4px 0 0}
+.tile.alert{border-color:var(--crit);background:var(--crit-tint)}
+.tile.alert .k,.tile.alert .d{color:var(--crit)}
+
+/* toolbar */
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.bar .seg{display:inline-flex;background:var(--sunken);border:1px solid var(--line);border-radius:8px;padding:2px}
+.bar .seg button{border:0;background:none;padding:5px 10px;border-radius:6px;font-size:12.5px;color:var(--ink-2);font-weight:500}
+.bar .seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.bar .spacer{flex:1}
+.bar .note{font-size:12px;color:var(--ink-2)}
+
+/* candidate table */
+.tblwrap{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:auto}
+table{border-collapse:collapse;width:100%;min-width:900px}
+th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--sunken);white-space:nowrap;position:sticky;top:0;z-index:1}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.cand{cursor:pointer}
+tr.cand:hover td{background:color-mix(in srgb,var(--green-tint) 45%,transparent)}
+tr.cand.sel td{background:var(--green-tint)}
+tr.decided td{opacity:.6}
+td.r,th.r{text-align:right}
+.rank{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink-2);font-weight:500}
+.prod b{display:block;font-weight:600}
+.prod span{font-size:12px;color:var(--ink-2)}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.chip svg{width:11px;height:11px}
+.chip.good{background:var(--good-tint);color:var(--good)}
+.chip.warn{background:var(--warn-tint);color:var(--warn)}
+.chip.crit{background:var(--crit-tint);color:var(--crit)}
+.chip.info{background:var(--info-tint);color:var(--info)}
+.chip.neutral{background:var(--sunken);color:var(--ink-2)}
+.fit{display:flex;align-items:center;gap:8px}
+.fit .track{width:64px;height:6px;background:var(--sunken);border-radius:3px;overflow:hidden}
+.fit .fill{height:100%;background:var(--c1);border-radius:3px}
+.fit .n{font-size:12.5px;font-weight:600;min-width:28px}
+.exp{display:flex;flex-direction:column;line-height:1.25}
+.exp b{font-weight:600}
+.exp span{font-size:11.5px;color:var(--ink-2)}
+.exp.urgent b{color:var(--crit)}
+.acts{display:flex;gap:6px;justify-content:flex-end}
+.btn{border:1px solid var(--line-2);background:var(--surface);border-radius:7px;padding:6px 11px;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap}
+.btn:hover{background:var(--sunken)}
+.btn.primary{background:var(--green);border-color:var(--green);color:var(--on-green)}
+.btn.primary:hover{background:var(--green-deep);border-color:var(--green-deep)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ink-2)}
+.btn.ghost:hover{background:var(--sunken)}
+.btn.danger{color:var(--crit)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.sm{padding:4px 9px;font-size:12px}
+
+/* detail drawer */
+.drawer{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-top:14px;padding:18px 20px;display:none}
+.drawer.on{display:block}
+.drawer h2{font-size:17px;margin:0 0 2px;font-weight:600}
+.drawer .sub{color:var(--ink-2);margin:0 0 14px;font-size:13px}
+.dgrid{display:grid;grid-template-columns:1.2fr 1fr;gap:18px}
+@media (max-width:900px){.dgrid{grid-template-columns:1fr}}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 12px;font-size:13px}
+.kv dt{color:var(--ink-2);margin:0}
+.kv dd{margin:0;font-weight:500}
+.rat{background:var(--sunken);border-radius:8px;padding:12px 14px;font-size:13.5px;line-height:1.5}
+.rat h4{margin:0 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.checks{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.checks li{display:flex;gap:10px;align-items:flex-start;font-size:13px}
+.checks .chip{flex:none;margin-top:1px}
+.decide{display:flex;gap:8px;align-items:center;margin-top:16px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--line)}
+.decide select{background:var(--sunken);border:1px solid var(--line);border-radius:7px;padding:6px 8px;font-size:12.5px}
+.decide .who{font-size:12px;color:var(--ink-2);margin-left:auto}
+.decided-note{background:var(--green-tint);color:var(--green-ink);border-radius:8px;padding:10px 12px;font-size:13px;margin-top:14px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.decided-note.rej{background:var(--sunken);color:var(--ink-2)}
+
+/* cases */
+.caselist{display:grid;grid-template-columns:340px 1fr;gap:14px;min-height:0}
+@media (max-width:900px){.caselist{grid-template-columns:1fr}}
+.cases{display:flex;flex-direction:column;gap:8px}
+.case{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;text-align:left;width:100%}
+.case:hover{border-color:var(--line-2)}
+.case.on{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.case .id{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-2);display:flex;justify-content:space-between}
+.case b{display:block;font-weight:600;margin:2px 0 6px}
+.case .mini{display:flex;gap:3px}
+.case .mini i{height:5px;flex:1;border-radius:2px;background:var(--sunken)}
+.case .mini i.done{background:var(--green)}
+.case .mini i.cur{background:var(--warn)}
+.case .mini i.stop{background:var(--crit)}
+.caserec{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.caserec h2{font-size:17px;margin:0;font-weight:600}
+.caserec .sub{color:var(--ink-2);font-size:13px;margin:2px 0 16px}
+.steps{list-style:none;padding:0;margin:0 0 18px;display:grid;gap:0}
+.steps li{display:grid;grid-template-columns:22px 70px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.steps li:last-child{border-bottom:none}
+.steps .ring{width:16px;height:16px;border-radius:50%;border:2px solid var(--line-2);display:grid;place-items:center}
+.steps .ring.done{background:var(--green);border-color:var(--green)}
+.steps .ring.done::after{content:"";width:6px;height:3px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+.steps .ring.cur{border-color:var(--warn);background:var(--warn-tint)}
+.steps .ring.stop{border-color:var(--crit);background:var(--crit)}
+.steps .code{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink-2)}
+.steps .lane{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:7px;vertical-align:0}
+.steps .name{font-weight:500}
+.steps .own{color:var(--ink-2);font-size:12px;font-weight:400;margin-left:6px}
+.steps .when{font-size:12px;color:var(--ink-2)}
+.l-sc{background:var(--blue)} .l-fin{background:var(--teal)} .l-med{background:var(--cyan)} .l-esg{background:var(--lime)} .l-atm{background:var(--green)} .l-dr{background:var(--magenta)}
+.assess{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+@media (max-width:900px){.assess{grid-template-columns:1fr}}
+.assess .a{background:var(--sunken);border-radius:8px;padding:10px 12px}
+.assess .a h4{margin:0 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.assess .a .big{font-size:18px;font-weight:600;margin:0}
+.assess .a .s{font-size:12px;color:var(--ink-2);margin:2px 0 0}
+.assess .a input{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 7px;font-size:13px;margin-top:6px}
+.gate{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--line)}
+.gate .hint{font-size:12.5px;color:var(--ink-2);flex-basis:100%}
+.log{margin-top:16px;font-size:12.5px;color:var(--ink-2)}
+.log h4{font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 6px}
+.log div{padding:3px 0;border-top:1px dashed var(--line)}
+.log .t{font-family:"JetBrains Mono",monospace;font-size:11px;margin-right:8px}
+
+/* readout */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media (max-width:900px){.charts{grid-template-columns:1fr}}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px 10px;position:relative}
+.chart h3{margin:0;font-size:14px;font-weight:600}
+.chart p{margin:2px 0 10px;font-size:12px;color:var(--ink-2)}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart text{font-family:"Figtree",sans-serif;fill:var(--ink-2);font-size:11px}
+.chart text.val{fill:var(--ink);font-weight:600}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .axis{stroke:var(--line-2);stroke-width:1}
+.chart .ref{stroke:var(--ref);stroke-width:1.5;stroke-dasharray:4 4}
+.chart .bar{fill:var(--c1)}
+.chart .bar.base{fill:var(--c2)}
+.chart .hit{fill:transparent}
+.chart .hit:hover + .bar, .chart g:hover .bar{opacity:.85}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--ink-2);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.legend i.ref{width:14px;height:0;border-top:2px dashed var(--ref);vertical-align:2px;border-radius:0}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;padding:6px 9px;border-radius:6px;white-space:nowrap;display:none;z-index:5;box-shadow:var(--shadow)}
+.tip b{font-weight:600}
+.metricstbl{margin-top:14px}
+.metricstbl table{min-width:640px}
+.trend{font-weight:600}
+.trend.up{color:var(--good)} .trend.down{color:var(--crit)} .trend.flat{color:var(--ink-2)}
+.footnote{font-size:12px;color:var(--ink-2);margin-top:12px;max-width:80ch}
+
+/* rules */
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:900px){.rules{grid-template-columns:1fr}}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.rule h3{margin:0 0 2px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.rule p{margin:0 0 10px;font-size:12.5px;color:var(--ink-2)}
+.rule textarea{width:100%;min-height:150px;background:var(--sunken);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.5;resize:vertical}
+.rule .owner{font-size:11.5px;color:var(--ink-2);margin-top:6px}
+
+/* agent pane */
+.agent{background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.agent .ah{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.agent .ah .av{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--green),var(--cyan));display:grid;place-items:center;color:#fff;font-weight:700;font-size:12px}
+.agent .ah b{font-size:13.5px;display:block}
+.agent .ah span{font-size:11.5px;color:var(--ink-2)}
+.agent .ah .close{margin-left:auto}
+.msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:92%;padding:9px 12px;border-radius:12px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+.msg.u{align-self:flex-end;background:var(--green-tint);color:var(--ink);border-bottom-right-radius:4px}
+.msg.a{align-self:flex-start;background:var(--sunken);border-bottom-left-radius:4px}
+.msg.a.think{color:var(--ink-2);font-style:italic}
+.msg .act{display:block;margin-top:6px;font-size:12px;color:var(--green-ink);font-weight:600}
+.starters{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 10px}
+.starters button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 10px;font-size:12px;color:var(--ink-2);text-align:left}
+.starters button:hover{border-color:var(--green);color:var(--green-ink)}
+.compose{display:flex;gap:8px;padding:10px 14px 14px;border-top:1px solid var(--line)}
+.compose textarea{flex:1;resize:none;background:var(--sunken);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:13.5px;min-height:42px;max-height:120px}
+.compose button{border:0;background:var(--green);color:var(--on-green);border-radius:10px;width:42px;display:grid;place-items:center}
+.compose button:disabled{opacity:.4}
+.agent .mode{font-size:11px;color:var(--ink-3);padding:0 14px 8px}
+.agentfab{position:fixed;right:16px;bottom:16px;display:none;z-index:9}
+.body.agent-hidden ~ .agentfab,.agentfab.show{display:block}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:9px 14px;border-radius:8px;font-size:13px;box-shadow:var(--shadow);opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+.emptyhint{color:var(--ink-2);font-size:13px;padding:24px;text-align:center}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="dot">T</span>Donation Opportunity Agent<span class="sub">Pilot · Path A · Step A-01</span></div>
+    <div class="ctx">
+      <span class="pill preview" title="Mockup of the Copilot Studio agent experience"><i></i>Copilot Studio · Preview</span>
+      <span class="pill example" title="All rows are illustrative pilot data, not Teva figures"><i></i>Example data</span>
+      <span class="pill sync" id="syncPill" title="Decisions save for everyone who opens this page when the store is available"><i></i>Local only</span>
+      <select id="site" aria-label="Pilot site"><option>EU Distribution Centre · pilot site</option></select>
+      <select id="fam" aria-label="Product family"><option>Oral solids · respiratory &amp; anti-infectives</option></select>
+      <button class="btn sm" id="toggleAgent">Agent</button>
+    </div>
+  </header>
+
+  <div class="body" id="body">
+    <nav class="nav" aria-label="Views">
+      <button class="on" data-view="cand"><svg class="ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h14M3 10h10M3 15h6"/></svg><span class="lbl">Candidates</span><span class="step">A-01</span></button>
+      <button data-view="cases"><svg class="ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M7 9h6M7 12.5h4"/></svg><span class="lbl">Cases</span><span class="step">A-01→A-11</span></button>
+      <button data-view="read"><svg class="ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 16V9M8 16V5M13 16v-6M18 16V8"/></svg><span class="lbl">Readout</span><span class="step">Wk 8</span></button>
+      <button data-view="rules"><svg class="ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h12v12H4z"/><path d="M7 8h6M7 11h6"/></svg><span class="lbl">Rules</span><span class="step">QA · DR</span></button>
+      <div class="spacer"></div>
+      <div class="foot">Pilot cycle <b>3 of 4</b><br>Week of 7 Sep 2026<br>List refreshed Mon 06:00</div>
+    </nav>
+
+    <main class="main">
+      <!-- CANDIDATES -->
+      <section class="view on" id="v-cand">
+        <div class="vh">
+          <div><div class="stepcode">A-01 · OPPORTUNITY DETECTION</div><h1>This week's donation candidates</h1><p>At-risk stock from the IAR feed, pre-screened for eligibility, Direct Relief fit and obvious compliance blockers. You decide, the agent recommends.</p></div>
+        </div>
+        <div class="strip" id="candStrip"></div>
+        <div class="bar">
+          <div class="seg" id="candFilter"><button class="on" data-f="open">Open</button><button data-f="all">All</button><button data-f="decided">Decided</button><button data-f="excluded">Excluded by rule</button></div>
+          <div class="spacer"></div>
+          <span class="note" id="candNote"></span>
+        </div>
+        <div class="tblwrap"><table id="candTbl">
+          <thead><tr><th>#</th><th>Product · batch</th><th class="r">Units</th><th>Expiry</th><th>Eligibility</th><th>DR fit</th><th>Compliance</th><th class="r">Cost avoided</th><th class="r">Est. patients</th><th class="r">Decision</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+        <div class="drawer" id="drawer"></div>
+      </section>
+
+      <!-- CASES -->
+      <section class="view" id="v-cases">
+        <div class="vh">
+          <div><div class="stepcode">A-01 → A-11 · CASE RECORD</div><h1>Pilot cases</h1><p>One structured record per approved candidate. The three A-02 assessments are captured once here, so A-11 closure becomes a query rather than a package.</p></div>
+        </div>
+        <div class="caselist">
+          <div class="cases" id="caseList"></div>
+          <div class="caserec" id="caseRec"><div class="emptyhint">Select a case</div></div>
+        </div>
+      </section>
+
+      <!-- READOUT -->
+      <section class="view" id="v-read">
+        <div class="vh">
+          <div><div class="stepcode">WEEK 8 · READOUT</div><h1>Pilot readout against baseline</h1><p>Baseline is the trailing 12 months for this site and product family. Pilot figures accumulate from the case records; the list precision row updates live from your decisions.</p></div>
+        </div>
+        <div class="strip" id="readStrip"></div>
+        <div class="charts">
+          <div class="chart" id="chartShare"><h3>Share of eligible excess donated, by pilot week</h3><p>Percent of eligible units that went to Direct Relief instead of destruction.</p><div class="svgwrap"></div><div class="legend"><span><i style="background:var(--c1)"></i>Pilot week</span><span><i class="ref"></i>12-month baseline</span></div><div class="tip"></div></div>
+          <div class="chart" id="chartLead"><h3>Days from IAR flag to Gate decision</h3><p>How long the three A-02 assessments take once a candidate is spotted.</p><div class="svgwrap"></div><div class="legend"><span><i style="background:var(--c1)"></i>Pilot week</span><span><i class="ref"></i>12-month baseline</span></div><div class="tip"></div></div>
+        </div>
+        <div class="tblwrap metricstbl"><table id="metricsTbl">
+          <thead><tr><th>Metric</th><th>Measured at</th><th class="r">Baseline</th><th class="r">Pilot to date</th><th class="r">Change</th><th>Read</th></tr></thead><tbody></tbody>
+        </table></div>
+        <p class="footnote">Environmental figures are estimates until the A-02-3 data file exists. Cost avoided uses the Finance method agreed in week 2: standard cost plus destruction cost. All values shown are example pilot data.</p>
+      </section>
+
+      <!-- RULES -->
+      <section class="view" id="v-rules">
+        <div class="vh">
+          <div><div class="stepcode">PRE-SCREEN INPUTS</div><h1>Rules the agent applies</h1><p>Short, human-written, owned by the people accountable for them. The agent reads these every cycle. Edit here, the next list uses the new text.</p></div>
+        </div>
+        <div class="rules">
+          <div class="rule"><h3><span class="lane l-fin" style="display:inline-block;width:8px;height:8px;border-radius:2px"></span>Eligibility rules</h3><p>What stock may be offered for donation from this site and family.</p><textarea id="r-elig"></textarea><div class="owner">Owner: QA / Regulatory · last confirmed week 2</div></div>
+          <div class="rule"><h3><span class="lane l-dr" style="display:inline-block;width:8px;height:8px;border-radius:2px"></span>Direct Relief needs list</h3><p>Current requested molecules and forms. Drives the DR fit score.</p><textarea id="r-dr"></textarea><div class="owner">Owner: CSR / Global Health · refreshed monthly from DR</div></div>
+          <div class="rule"><h3><span class="lane l-dr" style="display:inline-block;width:8px;height:8px;border-radius:2px"></span>Compliance blockers</h3><p>Known reasons a case fails at A-09b. Checked up front so they don't fail last.</p><textarea id="r-comp"></textarea><div class="owner">Owner: Global Compliance</div></div>
+          <div class="rule"><h3><span class="lane l-sc" style="display:inline-block;width:8px;height:8px;border-radius:2px"></span>Ranking logic</h3><p>How the agent orders the list. Plain language, no weights hidden in code.</p><textarea id="r-rank"></textarea><div class="owner">Owner: Product · reviewed at each cycle</div></div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="agent" id="agent" aria-label="Agent chat">
+      <div class="ah"><div class="av">DA</div><div><b>Donation Opportunity Agent</b><span id="agentStatus">Reads this week's list, the rules and your decisions</span></div><button class="btn ghost sm close" id="closeAgent" aria-label="Hide agent">Hide</button></div>
+      <div class="msgs" id="msgs"></div>
+      <div class="starters" id="starters"></div>
+      <div class="mode" id="agentMode"></div>
+      <div class="compose"><textarea id="ask" rows="1" placeholder="Ask about a candidate, a rule, or the readout"></textarea><button id="send" aria-label="Send"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h13M11 5l5 5-5 5"/></svg></button></div>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Example pilot data (illustrative, not Teva figures) ---------- */
+const TODAY = new Date('2026-09-07');
+const fmtDate = d => new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+const daysTo = d => Math.round((new Date(d)-TODAY)/86400000);
+const fmtN = n => n.toLocaleString('en-GB');
+const fmtEur = n => '€'+Math.round(n).toLocaleString('en-GB');
+
+const CANDIDATES = [
+ {id:'C-2611',product:'Salbutamol 100 µg inhaler',batch:'SB4471A',units:8400,expiry:'2027-11-30',elig:'pass',fit:94,comp:'none',cost:61300,patients:8400,co2:2.1,rank:1,
+  rationale:'Highest DR-fit on the list: salbutamol inhalers are the top respiratory request on Direct Relief\'s September needs list. 14 months of shelf life clears the 12-month receipt rule with margin. Standard cost plus avoided destruction gives the largest value line this cycle. No known compliance blocker for the requesting countries.',
+  checks:[['good','Shelf life at receipt ≥ 12 months (14.8 months)'],['good','Molecule on DR needs list: respiratory, priority 1'],['good','Not cold chain, not controlled'],['good','Label language: EN/FR, accepted'],['info','Batch release certificate on file (QA)']]},
+ {id:'C-2612',product:'Amoxicillin 500 mg capsules',batch:'AM1093K',units:24000,expiry:'2027-08-15',elig:'pass',fit:88,comp:'none',cost:38900,patients:2400,co2:3.4,rank:2,
+  rationale:'Largest unit volume this cycle. Amoxicillin is a standing DR request across three programme countries. Shelf life is 11.3 months at expected receipt, inside the 6 to 12 month exception band, so this needs the DR exception request that was pre-agreed in week 2. Ranked below C-2611 because the exception adds one step.',
+  checks:[['warn','Shelf life at receipt 11.3 months, DR exception required'],['good','Molecule on DR needs list: anti-infectives, priority 1'],['good','Not cold chain, not controlled'],['good','Label language: EN, accepted']]},
+ {id:'C-2613',product:'Azithromycin 250 mg tablets',batch:'AZ7720C',units:6600,expiry:'2027-10-05',elig:'pass',fit:81,comp:'none',cost:22100,patients:1100,co2:0.9,rank:3,
+  rationale:'On the DR needs list at priority 2. Comfortable shelf life. Smaller value line than the two above. Nothing blocking it; it can travel on the same offer as C-2611 to save an A-07 cycle.',
+  checks:[['good','Shelf life at receipt ≥ 12 months (13 months)'],['good','Molecule on DR needs list: anti-infectives, priority 2'],['good','Not cold chain, not controlled'],['good','Label language: EN, accepted']]},
+ {id:'C-2614',product:'Metformin 850 mg tablets',batch:'MF3310B',units:18000,expiry:'2027-06-30',elig:'pass',fit:72,comp:'label',cost:9700,patients:1500,co2:2.6,rank:4,
+  rationale:'Steady DR request for non-communicable disease programmes, but the batch is labelled DE only. Compliance blocker list says DE-only labels need a relabel or a country waiver. Ranked here because the value line is modest and the label step adds roughly two weeks. Worth deciding now so it does not slip under 9 months.',
+  checks:[['warn','Shelf life at receipt 9.7 months, DR exception required'],['good','Molecule on DR needs list: NCD, priority 2'],['warn','Label language DE only: relabel or waiver needed'],['good','Not cold chain, not controlled']]},
+ {id:'C-2615',product:'Omeprazole 20 mg capsules',batch:'OM5582D',units:12000,expiry:'2028-01-31',elig:'pass',fit:38,comp:'none',cost:7400,patients:1000,co2:1.6,rank:5,
+  rationale:'Clean on eligibility and compliance, long shelf life, but omeprazole is not on this month\'s DR needs list. Low fit means a real chance of rejection at A-09. Recommend holding this one for next month\'s list refresh rather than spending three assessments on it now.',
+  checks:[['good','Shelf life at receipt ≥ 12 months (16.8 months)'],['crit','Not on the current DR needs list'],['good','Not cold chain, not controlled'],['good','Label language: EN/NL, accepted']]},
+ {id:'C-2616',product:'Ibuprofen 400 mg tablets',batch:'IB9018F',units:30000,expiry:'2027-03-31',elig:'exception',fit:76,comp:'none',cost:6200,patients:2500,co2:3.9,rank:6,
+  rationale:'On the DR list and high volume, but only 6.8 months of shelf life at receipt. That is at the bottom of the exception band. If the offer is not submitted within two weeks it drops below 6 months and becomes ineligible. This is the "too late" flag for the cycle.',
+  checks:[['crit','Crosses the 6-month floor in 25 days: act this cycle or write off'],['good','Molecule on DR needs list: pain relief, priority 3'],['good','Not cold chain, not controlled'],['good','Label language: EN, accepted']],urgent:true},
+ {id:'C-2617',product:'Losartan 50 mg tablets',batch:'LS2204H',units:9000,expiry:'2027-09-30',elig:'pass',fit:64,comp:'country',cost:8100,patients:750,co2:1.2,rank:7,
+  rationale:'Reasonable fit for NCD programmes. Compliance list flags that one of the three requesting countries requires an import permit for antihypertensives that takes 6 to 8 weeks. Offer it for the other two countries only, and say so in the A-05 email.',
+  checks:[['good','Shelf life at receipt ≥ 12 months (12.7 months)'],['good','Molecule on DR needs list: NCD, priority 3'],['warn','Import permit required in 1 of 3 requesting countries'],['good','Not cold chain, not controlled']]},
+ {id:'C-2618',product:'Ceftriaxone 1 g injection',batch:'CF0071J',units:4000,expiry:'2027-12-31',elig:'qa',fit:90,comp:'none',cost:17500,patients:800,co2:0.6,rank:8,
+  rationale:'Very high DR demand and long shelf life, but injectables are outside the pilot product family. Eligibility rule 4 says injectables need a separate QA review of storage history before they can be offered. Shown so QA can decide whether to widen the family next cycle. Not rankable until they do.',
+  checks:[['warn','Outside pilot product family: injectable, needs QA review'],['good','Molecule on DR needs list: anti-infectives, priority 1'],['good','Shelf life at receipt ≥ 12 months (15.8 months)'],['good','Not cold chain, not controlled']]},
+ {id:'C-2619',product:'Insulin glargine 100 U/mL pen',batch:'IG5540M',units:2200,expiry:'2027-07-31',elig:'fail',fit:0,comp:'coldchain',cost:0,patients:0,co2:0,rank:99,
+  rationale:'Excluded by rule 2: cold chain products are out of scope for the pilot. Listed for transparency only. If the pilot succeeds, cold chain is the first family to consider adding, because the value line per unit is high.',
+  checks:[['crit','Rule 2: cold chain excluded from pilot']]},
+ {id:'C-2620',product:'Codeine 30 mg tablets',batch:'CD1180P',units:5000,expiry:'2027-10-31',elig:'fail',fit:0,comp:'controlled',cost:0,patients:0,co2:0,rank:99,
+  rationale:'Excluded by rule 3: controlled substances cannot be donated through this route. Listed for transparency only.',
+  checks:[['crit','Rule 3: controlled substance excluded']]}
+];
+
+const LANES = {sc:'Supply Chain / Market',fin:'Finance & Tax',med:'Medical Affairs',esg:'ESG',atm:'AtM Program Mgr',dr:'Direct Relief / Compliance'};
+const STEPS = [
+ ['A-01','Opportunity detection','atm'],['A-02-1','Financial impact','fin'],['A-02-2','Patient reach','med'],['A-02-3','Environmental impact','esg'],
+ ['Gate','Proceed?','fin'],['A-05','Case initiation','atm'],['A-07','Offer preparation','sc'],['A-08','Offer submission','atm'],
+ ['A-09','DR accepts?','dr'],['A-09b','Allowed?','dr'],['A-10','Shipment','sc'],['A-11','Closure & impact','atm']
+];
+
+// Seeded example cases from earlier pilot weeks
+const SEED_CASES = {
+ 'P-0031':{cand:'C-2601',product:'Salbutamol 100 µg inhaler',batch:'SB4402A',units:6000,week:1,step:11,stopped:null,fin:43800,pat:6000,env:1.5,envEst:true,
+   log:[['Wk1 Mon','A-01 approved by site lead'],['Wk1 Wed','A-02 assessments captured'],['Wk1 Thu','Gate: proceed'],['Wk2 Mon','A-05 email to market'],['Wk2 Thu','A-07 MDS ready'],['Wk2 Fri','A-08 offer sent to DR'],['Wk3 Tue','A-09 DR accepted'],['Wk3 Wed','A-09b allowed'],['Wk4 Mon','A-10 shipped'],['Wk4 Fri','A-11 closed: 6,000 units, €43,800 avoided']]},
+ 'P-0032':{cand:'C-2603',product:'Amoxicillin 500 mg capsules',batch:'AM1077K',units:15000,week:1,step:8,stopped:null,fin:24300,pat:1500,env:2.1,envEst:true,
+   log:[['Wk1 Mon','A-01 approved by site lead'],['Wk1 Wed','A-02 assessments captured'],['Wk1 Thu','Gate: proceed'],['Wk2 Tue','A-05 email to market'],['Wk3 Mon','A-07 MDS ready'],['Wk3 Tue','A-08 offer sent to DR, exception requested']]},
+ 'P-0033':{cand:'C-2605',product:'Omeprazole 20 mg capsules',batch:'OM5560D',units:9000,week:2,step:8,stopped:8,fin:5600,pat:750,env:1.2,envEst:true,
+   log:[['Wk2 Mon','A-01 approved by site lead'],['Wk2 Wed','A-02 assessments captured'],['Wk2 Thu','Gate: proceed'],['Wk2 Fri','A-05 email to market'],['Wk3 Tue','A-07 MDS ready'],['Wk3 Wed','A-08 offer sent to DR'],['Wk3 Fri','A-09 DR declined: not on needs list. Upstream work lost.']]},
+ 'P-0034':{cand:'C-2607',product:'Azithromycin 250 mg tablets',batch:'AZ7701C',units:4800,week:2,step:4,stopped:null,fin:16000,pat:800,env:0.7,envEst:true,
+   log:[['Wk2 Mon','A-01 approved by site lead'],['Wk2 Thu','A-02-1 and A-02-2 captured'],['Wk3 Mon','A-02-3 pending: ESG data file TBD']]}
+};
+
+const RULES = {
+ elig:`1. Minimum remaining shelf life at DR receipt: 12 months. 6 to 12 months only with a DR exception request. Below 6 months: not eligible.
+2. Cold chain products are out of scope for the pilot.
+3. Controlled substances are out of scope for the pilot.
+4. Injectables need a separate QA review of storage history before they can be offered.
+5. Batch must have a release certificate and no open deviation.
+6. Original, unopened secondary packaging only.`,
+ dr:`Priority 1: salbutamol inhalers, amoxicillin, ceftriaxone, ORS.
+Priority 2: azithromycin, metformin, insulin (cold chain, not this pilot).
+Priority 3: losartan, ibuprofen, paracetamol.
+Not requested this month: omeprazole, statins, antihistamines.
+Requesting countries: three programme countries in West Africa and Central America. Minimum 12 months shelf life at receipt, exceptions considered case by case.`,
+ comp:`- Labels in DE only need a relabel or a country waiver before A-09b.
+- Antihypertensives need an import permit in one requesting country, 6 to 8 weeks.
+- Any product with a pending recall or field alert fails A-09b.
+- Market entity must confirm no local tender obligation on the batch.`,
+ rank:`Order by: 1) urgency, days until the batch crosses the 6-month floor; 2) DR fit, whether the molecule is on the current needs list and at what priority; 3) value line, cost avoided plus estimated patients; 4) friction, how many extra steps (exception, relabel, permit) the case needs.
+Anything excluded by rule sits at the bottom, shown for transparency only.
+Anything crossing the 6-month floor within the next cycle gets the "act now" flag.`
+};
+
+const BASE = {share:18,lead:23,gateToOffer:14,rej:31,hours:11,envGap:100};
+const WEEKS = [{w:'Wk 1',share:33,lead:12},{w:'Wk 2',share:29,lead:9},{w:'Wk 3',share:44,lead:8},{w:'Wk 4',share:null,lead:null}];
+
+/* ---------- State ---------- */
+let state = {decisions:{}, cases:JSON.parse(JSON.stringify(SEED_CASES)), rules:{...RULES}, nextCase:35};
+let db=null, sample=null, selected=null, selCase='P-0034', filter='open', history=[];
+const USER = 'Site supply chain lead';
+
+/* ---------- Persistence ---------- */
+const stateDoc = () => db && db.doc('pilot/state');
+function loadLocal(){ try{const s=localStorage.getItem('teva-mvo-state'); if(s){const p=JSON.parse(s); state={...state,...p};}}catch(e){} }
+let saveTimer=null;
+function persist(){
+  try{localStorage.setItem('teva-mvo-state',JSON.stringify(state));}catch(e){}
+  if(db){clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ stateDoc().set({decisions:state.decisions,cases:state.cases,rules:state.rules,nextCase:state.nextCase,updatedAt:new Date().toISOString()}).catch(()=>{}); },300);}
+}
+function applyRemote(data){
+  if(!data) return;
+  state.decisions=data.decisions||{}; state.cases=data.cases||state.cases; state.rules=data.rules||state.rules; state.nextCase=data.nextCase||state.nextCase;
+  renderAll();
+}
+
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const el = (h) => {const t=document.createElement('template'); t.innerHTML=h.trim(); return t.content.firstChild;};
+function toast(m){const t=$('#toast'); t.textContent=m; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),2200);}
+const icon = {
+  good:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 6.5l2.5 2.5L10 3.5"/></svg>',
+  warn:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2v5M6 9.5v.5"/></svg>',
+  crit:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3l6 6M9 3l-6 6"/></svg>',
+  info:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="4.5"/><path d="M6 5.5v3"/></svg>'
+};
+const chip=(k,t)=>`<span class="chip ${k}">${icon[k]||''}${t}</span>`;
+function eligChip(c){return {pass:chip('good','Eligible'),exception:chip('warn','DR exception'),qa:chip('warn','QA review'),fail:chip('crit','Excluded')}[c.elig];}
+function compChip(c){return {none:chip('neutral','None known'),label:chip('warn','Label DE only'),country:chip('warn','Import permit'),coldchain:chip('crit','Cold chain'),controlled:chip('crit','Controlled')}[c.comp];}
+function decisionOf(id){return state.decisions[id];}
+
+/* ---------- Candidates view ---------- */
+function visibleCands(){
+  return CANDIDATES.filter(c=>{
+    const d=decisionOf(c.id), ex=c.elig==='fail';
+    if(filter==='open') return !d && !ex;
+    if(filter==='decided') return !!d;
+    if(filter==='excluded') return ex;
+    return true;
+  }).sort((a,b)=>a.rank-b.rank);
+}
+function renderCandStrip(){
+  const open=CANDIDATES.filter(c=>c.elig!=='fail'&&!decisionOf(c.id));
+  const urgent=CANDIDATES.filter(c=>c.urgent&&!decisionOf(c.id));
+  const val=open.reduce((s,c)=>s+c.cost,0), pat=open.reduce((s,c)=>s+c.patients,0);
+  const appr=Object.values(state.decisions).filter(d=>d.status==='approved').length, rej=Object.values(state.decisions).filter(d=>d.status==='rejected').length;
+  $('#candStrip').innerHTML=`
+   <div class="tile"><p class="k">Open candidates</p><p class="v">${open.length}<small>of ${CANDIDATES.length} flagged</small></p><p class="d">2 excluded by rule</p></div>
+   <div class="tile ${urgent.length?'alert':''}"><p class="k">Act this cycle</p><p class="v">${urgent.length}</p><p class="d">${urgent.length?urgent.map(c=>c.product.split(' ')[0]).join(', ')+' crosses 6-month floor':'Nothing crossing the floor'}</p></div>
+   <div class="tile"><p class="k">Cost avoided if all approved</p><p class="v">${fmtEur(val)}</p><p class="d">Finance method, wk 2</p></div>
+   <div class="tile"><p class="k">Est. patient courses</p><p class="v">${fmtN(pat)}</p><p class="d">Medical Affairs model</p></div>
+   <div class="tile"><p class="k">Decided this cycle</p><p class="v">${appr+rej}<small>${appr} approved · ${rej} rejected</small></p><p class="d">Precision ${appr+rej?Math.round(appr/(appr+rej)*100)+'%':'n/a'}</p></div>`;
+}
+function renderCandTable(){
+  const tb=$('#candTbl tbody'); tb.innerHTML='';
+  const rows=visibleCands();
+  $('#candNote').textContent=`${rows.length} shown · ranked by urgency, DR fit, value, friction`;
+  if(!rows.length){tb.innerHTML='<tr><td colspan="10" class="emptyhint">Nothing here</td></tr>';return;}
+  rows.forEach(c=>{
+    const d=decisionOf(c.id), days=daysTo(c.expiry), ex=c.elig==='fail';
+    const tr=el(`<tr class="cand ${selected===c.id?'sel':''} ${d||ex?'decided':''}" data-id="${c.id}">
+      <td class="rank">${ex?'—':c.rank}</td>
+      <td class="prod"><b>${c.product}</b><span class="mono">${c.batch} · ${c.id}</span></td>
+      <td class="r num">${fmtN(c.units)}</td>
+      <td><div class="exp ${c.urgent?'urgent':''}"><b class="num">${days} days</b><span>${fmtDate(c.expiry)}</span></div></td>
+      <td>${eligChip(c)}</td>
+      <td>${ex?'<span class="chip neutral">n/a</span>':`<div class="fit"><div class="track"><div class="fill" style="width:${c.fit}%"></div></div><span class="n num">${c.fit}</span></div>`}</td>
+      <td>${compChip(c)}</td>
+      <td class="r num">${ex?'—':fmtEur(c.cost)}</td>
+      <td class="r num">${ex?'—':fmtN(c.patients)}</td>
+      <td class="r">${d?(d.status==='approved'?chip('good','Approved → '+d.caseId):chip('neutral','Rejected')):ex?'':`<div class="acts"><button class="btn sm primary" data-act="approve">Approve</button><button class="btn sm" data-act="reject">Reject</button></div>`}</td>
+    </tr>`);
+    tb.appendChild(tr);
+  });
+}
+function renderDrawer(){
+  const dr=$('#drawer'); const c=CANDIDATES.find(x=>x.id===selected);
+  if(!c){dr.classList.remove('on');dr.innerHTML='';return;}
+  const d=decisionOf(c.id), days=daysTo(c.expiry);
+  dr.classList.add('on');
+  dr.innerHTML=`
+   <h2>${c.product}</h2><p class="sub">Batch <span class="mono">${c.batch}</span> · ${c.id} · rank ${c.rank===99?'excluded':c.rank} of ${CANDIDATES.filter(x=>x.elig!=='fail').length}</p>
+   <div class="dgrid">
+     <div>
+       <dl class="kv">
+         <dt>Units</dt><dd class="num">${fmtN(c.units)}</dd>
+         <dt>Expiry</dt><dd>${fmtDate(c.expiry)} · <span class="num">${days}</span> days · <span class="num">${(days/30.4).toFixed(1)}</span> months</dd>
+         <dt>Shelf life at receipt</dt><dd class="num">${((days-45)/30.4).toFixed(1)} months <span style="color:var(--ink-2);font-weight:400">(assumes 45-day lead to DR)</span></dd>
+         <dt>Eligibility</dt><dd>${eligChip(c)}</dd>
+         <dt>DR fit</dt><dd class="num">${c.fit}/100</dd>
+         <dt>Compliance</dt><dd>${compChip(c)}</dd>
+         <dt>A-02-1 Financial</dt><dd class="num">${fmtEur(c.cost)} cost avoided (estimate)</dd>
+         <dt>A-02-2 Patient reach</dt><dd class="num">${fmtN(c.patients)} courses (estimate)</dd>
+         <dt>A-02-3 Environmental</dt><dd class="num">${c.co2} t CO₂e destruction avoided <span style="color:var(--warn);font-weight:500">· estimate, data file TBD</span></dd>
+       </dl>
+     </div>
+     <div>
+       <div class="rat"><h4>Agent rationale</h4>${c.rationale}</div>
+       <ul class="checks" style="margin-top:12px">${c.checks.map(([k,t])=>`<li>${chip(k,'')}<span>${t}</span></li>`).join('')}</ul>
+     </div>
+   </div>
+   ${d?`<div class="decided-note ${d.status==='rejected'?'rej':''}"><span>${d.status==='approved'?`Approved by ${d.by}. Case ${d.caseId} opened with the three A-02 estimates pre-filled.`:`Rejected by ${d.by}: ${d.reason}.`}</span><button class="btn sm ghost" data-act="undo">Undo</button></div>`
+     : c.elig==='fail'?`<div class="decided-note rej"><span>Excluded by rule. No decision needed. Raise with QA if you think the rule should change.</span></div>`
+     :`<div class="decide">
+        <button class="btn primary" data-act="approve">Approve · open case</button>
+        <select id="rejReason"><option>Reject: not enough shelf life</option><option>Reject: DR unlikely to accept</option><option>Reject: compliance step too long</option><option>Reject: needed for local supply</option><option>Reject: other</option></select>
+        <button class="btn" data-act="reject">Reject</button>
+        <span class="who">Deciding as ${USER}</span></div>`}`;
+}
+function approve(id){
+  const c=CANDIDATES.find(x=>x.id===id); if(!c||decisionOf(id)) return;
+  const caseId='P-00'+state.nextCase++;
+  state.decisions[id]={status:'approved',by:USER,at:new Date().toISOString(),caseId};
+  state.cases[caseId]={cand:id,product:c.product,batch:c.batch,units:c.units,week:3,step:4,stopped:null,fin:c.cost,pat:c.patients,env:c.co2,envEst:true,
+    log:[['Wk3 '+dayName(),'A-01 approved by '+USER],['Wk3 '+dayName(),'A-02 estimates pre-filled from agent; owners to confirm']]};
+  persist(); renderAll(); toast(`Approved ${c.product}. Case ${caseId} opened.`);
+  return caseId;
+}
+function reject(id,reason){
+  const c=CANDIDATES.find(x=>x.id===id); if(!c||decisionOf(id)) return;
+  state.decisions[id]={status:'rejected',by:USER,at:new Date().toISOString(),reason:reason.replace(/^Reject: /,'')};
+  persist(); renderAll(); toast(`Rejected ${c.product}. Logged for list precision.`);
+}
+function undo(id){
+  const d=decisionOf(id); if(!d) return;
+  if(d.caseId) delete state.cases[d.caseId];
+  delete state.decisions[id]; persist(); renderAll();
+}
+const dayName=()=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()];
+
+/* ---------- Cases view ---------- */
+function renderCases(){
+  const list=$('#caseList'); list.innerHTML='';
+  const ids=Object.keys(state.cases).sort();
+  if(!ids.includes(selCase)) selCase=ids[ids.length-1];
+  ids.forEach(id=>{
+    const k=state.cases[id];
+    const mini=STEPS.map((s,i)=>`<i class="${k.stopped!==null&&i===k.stopped?'stop':i<k.step?'done':i===k.step?'cur':''}"></i>`).join('');
+    const status=k.stopped!==null?chip('crit','Stopped at '+STEPS[k.stopped][0]):k.step>=STEPS.length?chip('good','Closed'):chip('warn',STEPS[k.step][0]+' · '+STEPS[k.step][1]);
+    list.appendChild(el(`<button class="case ${id===selCase?'on':''}" data-case="${id}"><div class="id"><span>${id}</span><span>Wk ${k.week}</span></div><b>${k.product}</b><div style="margin-bottom:6px">${status}</div><div class="mini">${mini}</div></button>`));
+  });
+  renderCaseRec();
+}
+function renderCaseRec(){
+  const r=$('#caseRec'); const k=state.cases[selCase]; if(!k){r.innerHTML='<div class="emptyhint">Select a case</div>';return;}
+  const steps=STEPS.map((s,i)=>{
+    const st=k.stopped!==null&&i===k.stopped?'stop':i<k.step?'done':i===k.step?'cur':'';
+    const when=(k.log.find(l=>l[1].startsWith(s[0]))||[])[0]||'';
+    return `<li><span class="ring ${st}"></span><span class="code">${s[0]}</span><span class="name"><span class="lane l-${s[2]}"></span>${s[1]}<span class="own">${LANES[s[2]]}</span></span><span class="when">${st==='stop'?'Stopped':st==='done'?when:st==='cur'?'In progress':''}</span></li>`;
+  }).join('');
+  const atGate=k.step===4&&k.stopped===null, closed=k.step>=STEPS.length, stopped=k.stopped!==null;
+  r.innerHTML=`
+   <h2>${selCase} · ${k.product}</h2><p class="sub">Batch <span class="mono">${k.batch}</span> · <span class="num">${fmtN(k.units)}</span> units · opened week ${k.week} · from candidate ${k.cand}</p>
+   <div class="assess">
+     <div class="a"><h4><span class="lane l-fin"></span>A-02-1 Financial</h4><p class="big num">${fmtEur(k.fin)}</p><p class="s">Cost avoided · Finance</p><input type="number" value="${k.fin}" data-f="fin" aria-label="Financial impact" ${closed||stopped?'disabled':''}></div>
+     <div class="a"><h4><span class="lane l-med"></span>A-02-2 Patient reach</h4><p class="big num">${fmtN(k.pat)}</p><p class="s">Courses · Medical Affairs</p><input type="number" value="${k.pat}" data-f="pat" aria-label="Patient reach" ${closed||stopped?'disabled':''}></div>
+     <div class="a"><h4><span class="lane l-esg"></span>A-02-3 Environmental</h4><p class="big num">${k.env} t CO₂e</p><p class="s" style="color:var(--warn)">Estimate · ESG data file TBD</p><input type="number" step="0.1" value="${k.env}" data-f="env" aria-label="Environmental impact" ${closed||stopped?'disabled':''}></div>
+   </div>
+   <ul class="steps">${steps}</ul>
+   <div class="gate">
+     ${atGate?`<span class="hint">Gate: Finance and Supply Chain leadership decide on the three assessments above. In the pilot this is a meeting; the record just captures the outcome.</span><button class="btn primary" data-g="proceed">Gate: proceed</button><button class="btn" data-g="hold">Hold</button><button class="btn danger" data-g="stop">Do not proceed</button>`
+      :closed?`<span class="hint">Closed. The A-11 impact line is the three assessments above, no re-typing.</span>`
+      :stopped?`<span class="hint">Stopped at ${STEPS[k.stopped][0]}. Upstream work on this case counts toward the A-09 waste metric.</span><button class="btn" data-g="reopen">Reopen</button>`
+      :`<span class="hint">Next: ${STEPS[k.step][0]} ${STEPS[k.step][1]}, owned by ${LANES[STEPS[k.step][2]]}. Manual in the pilot; mark it when done.</span><button class="btn primary" data-g="next">Mark ${STEPS[k.step][0]} done</button>${k.step===8||k.step===9?`<button class="btn danger" data-g="stop">${k.step===8?'DR declined':'Not allowed'}</button>`:''}`}
+   </div>
+   <div class="log"><h4>Case log</h4>${k.log.slice().reverse().map(l=>`<div><span class="t">${l[0]}</span>${l[1]}</div>`).join('')}</div>`;
+}
+function caseAction(g){
+  const k=state.cases[selCase]; if(!k) return; const stamp='Wk3 '+dayName();
+  if(g==='proceed'){k.step=5;k.log.push([stamp,'Gate: proceed']);}
+  else if(g==='hold'){k.log.push([stamp,'Gate: held for more information']);}
+  else if(g==='stop'){k.stopped=k.step;k.log.push([stamp,STEPS[k.step][0]+' '+(k.step===8?'DR declined':k.step===9?'not allowed by compliance':'gate: do not proceed')]);}
+  else if(g==='reopen'){k.stopped=null;k.log.push([stamp,'Reopened']);}
+  else if(g==='next'){k.log.push([stamp,STEPS[k.step][0]+' done']);k.step++; if(k.step>=STEPS.length) k.log.push([stamp,`A-11 closed: ${fmtN(k.units)} units, ${fmtEur(k.fin)} avoided`]);}
+  persist(); renderCases(); renderReadout();
+}
+
+/* ---------- Readout ---------- */
+function metrics(){
+  const cs=Object.values(state.cases);
+  const closed=cs.filter(c=>c.step>=STEPS.length), stopped=cs.filter(c=>c.stopped!==null), reached9=cs.filter(c=>c.step>=9||(c.stopped!==null&&c.stopped>=8));
+  const appr=Object.values(state.decisions).filter(d=>d.status==='approved').length, rej=Object.values(state.decisions).filter(d=>d.status==='rejected').length;
+  const seedAppr=4, seedRej=1;
+  const precision=Math.round((appr+seedAppr)/(appr+rej+seedAppr+seedRej)*100);
+  const donatedUnits=closed.reduce((s,c)=>s+c.units,0);
+  const share=WEEKS.filter(w=>w.share!==null); const shareAvg=Math.round(share.reduce((s,w)=>s+w.share,0)/share.length);
+  const lead=WEEKS.filter(w=>w.lead!==null); const leadAvg=Math.round(lead.reduce((s,w)=>s+w.lead,0)/lead.length*10)/10;
+  const rejRate=reached9.length?Math.round(stopped.filter(c=>c.stopped>=8).length/reached9.length*100):0;
+  const envGap=cs.length?Math.round(cs.filter(c=>c.envEst).length/cs.length*100):100;
+  const value=closed.reduce((s,c)=>s+c.fin,0), patients=closed.reduce((s,c)=>s+c.pat,0);
+  return {precision,donatedUnits,shareAvg,leadAvg,rejRate,envGap,value,patients,cases:cs.length,closed:closed.length};
+}
+function renderReadout(){
+  const m=metrics();
+  $('#readStrip').innerHTML=`
+   <div class="tile"><p class="k">Eligible excess donated</p><p class="v num">${m.shareAvg}%<small>vs ${BASE.share}% baseline</small></p><p class="d">Headline metric · 3 of 4 weeks in</p></div>
+   <div class="tile"><p class="k">IAR flag → Gate</p><p class="v num">${m.leadAvg}<small>days · was ${BASE.lead}</small></p><p class="d">Three assessments, one record</p></div>
+   <div class="tile ${m.rejRate>BASE.rej?'alert':''}"><p class="k">Rejected at A-09 / A-09b</p><p class="v num">${m.rejRate}%<small>vs ${BASE.rej}%</small></p><p class="d">Wasted upstream work</p></div>
+   <div class="tile"><p class="k">List precision</p><p class="v num">${m.precision}%<small>target ≥ 70%</small></p><p class="d">Accepted over recommended, live</p></div>
+   <div class="tile"><p class="k">Value line, closed cases</p><p class="v num">${fmtEur(m.value)}</p><p class="d">${fmtN(m.patients)} patient courses · ${fmtN(m.donatedUnits)} units</p></div>`;
+  drawBars($('#chartShare'),WEEKS.map(w=>({l:w.w,v:w.share})),BASE.share,'%','Baseline '+BASE.share+'%');
+  drawBars($('#chartLead'),WEEKS.map(w=>({l:w.w,v:w.lead})),BASE.lead,' days','Baseline '+BASE.lead+' days');
+  // [label, where, baseline, pilot, delta(pilot-baseline), lowerIsBetter, unit, read]
+  const rows=[
+   ['% of eligible excess donated vs destroyed','A-11 vs write-off records',BASE.share,m.shareAvg,false,' pts','Headline. Three weeks in, ahead of baseline.'],
+   ['Days from IAR flag to Gate','A-01 → Gate',BASE.lead,m.leadAvg,true,' days','Faster because A-02 is captured once, not in three files.'],
+   ['Days from Gate to offer submission','Gate → A-08',BASE.gateToOffer,9,true,' days','A-05 and A-07 still email-driven; modest gain.'],
+   ['% of cases rejected at A-09 or A-09b','A-09, A-09b',BASE.rej,m.rejRate,true,' pts','Small sample: '+Object.values(state.cases).filter(c=>c.step>=9||(c.stopped!==null&&c.stopped>=8)).length+' cases have reached A-09. P-0033 was off the DR list; the pre-screen now holds those at A-01.'],
+   ['Analyst hours per evaluation','A-02',BASE.hours,4.5,true,' h','Self-reported by Finance, Medical, ESG.'],
+   ['Candidate list precision','A-01 decision log',null,m.precision,false,' pts',m.precision>=70?'Above the 70% threshold.':'Below the 70% threshold. Review ranking logic.'],
+   ['% of cases with no environmental figure','A-02-3',BASE.envGap,m.envGap,true,' pts','Every case still an estimate. Data file is the blocker.'],
+   ['Value line on every donation','A-11','Fragmented','100%',null,'','Structured record makes this automatic.']
+  ];
+  const pct=(r)=>String(r[0]).startsWith('%')||r[0].includes('precision');
+  const fmtV=(r,v)=>v===null?'n/a':typeof v==='number'?(pct(r)?v+'%':v):v;
+  const change=(r)=>{
+    if(r[4]===null||r[2]===null||typeof r[2]!=='number') return ['flat','—'];
+    const d=Math.round((r[3]-r[2])*10)/10; if(d===0) return ['flat','no change'];
+    const good=r[4]?d<0:d>0; return [good?'up':'down',(d>0?'+':'')+d+r[5]];
+  };
+  $('#metricsTbl tbody').innerHTML=rows.map(r=>{const [cls,txt]=change(r);return `<tr><td><b style="font-weight:600">${r[0]}</b></td><td style="color:var(--ink-2)">${r[1]}</td><td class="r num">${fmtV(r,r[2])}</td><td class="r num">${fmtV(r,r[3])}</td><td class="r num trend ${cls}">${txt}</td><td style="color:var(--ink-2)">${r[6]}</td></tr>`;}).join('');
+}
+function drawBars(root,data,ref,unit,refLabel){
+  const wrap=root.querySelector('.svgwrap'), tip=root.querySelector('.tip');
+  const W=460,H=200,pl=36,pr=12,pt=14,pb=28; const iw=W-pl-pr, ih=H-pt-pb;
+  const raw=Math.max(ref,...data.map(d=>d.v||0))*1.15; const stepc=[1,2,5,10,20,25,50,100].find(x=>raw/x<=5)||100; const max=Math.ceil(raw/stepc)*stepc;
+  const y=v=>pt+ih-(v/max)*ih; const bw=iw/data.length; const barW=Math.min(48,bw*.5);
+  const ticks=[]; for(let t=0;t<=max;t+=stepc) ticks.push(t);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${root.querySelector('h3').textContent}">`;
+  ticks.forEach(t=>{s+=`<line class="grid" x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}"/><text x="${pl-6}" y="${y(t)+4}" text-anchor="end">${t}${unit==='%'?'%':''}</text>`;});
+  s+=`<line class="axis" x1="${pl}" x2="${W-pr}" y1="${y(0)}" y2="${y(0)}"/>`;
+  data.forEach((d,i)=>{
+    const cx=pl+bw*i+bw/2; const x=cx-barW/2;
+    if(d.v===null){ s+=`<text x="${cx}" y="${y(0)-8}" text-anchor="middle" style="fill:var(--ink-3)">pending</text>`; }
+    else { const h=y(0)-y(d.v); s+=`<g data-i="${i}"><rect class="hit" x="${pl+bw*i}" y="${pt}" width="${bw}" height="${ih}"/><path class="bar" d="M${x},${y(0)} v${-(h-4)} a4,4 0 0 1 4,-4 h${barW-8} a4,4 0 0 1 4,4 v${h-4} z"/>${i===data.length-2?`<text class="val" x="${cx}" y="${y(d.v)-6}" text-anchor="middle">${d.v}${unit}</text>`:''}</g>`; }
+    s+=`<text x="${cx}" y="${H-8}" text-anchor="middle">${d.l}</text>`;
+  });
+  s+=`<line class="ref" x1="${pl}" x2="${W-pr}" y1="${y(ref)}" y2="${y(ref)}"/><text x="${W-pr}" y="${y(ref)-5}" text-anchor="end">${refLabel}</text></svg>`;
+  wrap.innerHTML=s;
+  wrap.querySelectorAll('g[data-i]').forEach(g=>{
+    g.addEventListener('mousemove',e=>{const d=data[+g.dataset.i]; tip.style.display='block'; const r=root.getBoundingClientRect(); tip.style.left=(e.clientX-r.left+12)+'px'; tip.style.top=(e.clientY-r.top-34)+'px'; tip.innerHTML=`<b>${d.l}</b> ${d.v}${unit} · baseline ${ref}${unit}`;});
+    g.addEventListener('mouseleave',()=>tip.style.display='none');
+  });
+}
+
+/* ---------- Rules ---------- */
+function renderRules(){ ['elig','dr','comp','rank'].forEach(k=>{const t=$('#r-'+k); if(document.activeElement!==t) t.value=state.rules[k];}); }
+['elig','dr','comp','rank'].forEach(k=>{$('#r-'+k).addEventListener('change',e=>{state.rules[k]=e.target.value; persist(); toast('Rule saved. Next cycle uses it.');});});
+
+/* ---------- Agent ---------- */
+const STARTERS=['Why is Salbutamol ranked first?','What must be decided this cycle or it is lost?','Which candidates are likely to be rejected by DR?','Draft the Gate summary for P-0034','What is holding the environmental figure back?'];
+function agentContext(){
+  const m=metrics();
+  const cands=CANDIDATES.map(c=>({id:c.id,product:c.product,batch:c.batch,units:c.units,expiry:c.expiry,daysToExpiry:daysTo(c.expiry),eligibility:c.elig,drFit:c.fit,compliance:c.comp,costAvoidedEur:c.cost,estPatients:c.patients,co2Est:c.co2,rank:c.rank,urgent:!!c.urgent,rationale:c.rationale,checks:c.checks.map(x=>x[1]),decision:state.decisions[c.id]||null}));
+  const cases=Object.entries(state.cases).map(([id,k])=>({id,product:k.product,units:k.units,week:k.week,currentStep:k.stopped!==null?'stopped at '+STEPS[k.stopped][0]:k.step>=STEPS.length?'closed':STEPS[k.step][0]+' '+STEPS[k.step][1],financialEur:k.fin,patients:k.pat,co2Est:k.env,log:k.log}));
+  return JSON.stringify({today:'2026-09-07',pilot:{site:'EU Distribution Centre (pilot)',family:'Oral solids: respiratory and anti-infectives',cycle:'3 of 4',user:USER},rules:state.rules,candidates:cands,cases,readout:{baseline:BASE,weeks:WEEKS,live:m},processSteps:STEPS.map(s=>s[0]+' '+s[1]+' ('+LANES[s[2]]+')')});
+}
+const SYSTEM=`You are the Donation Opportunity Agent, a Copilot Studio agent in Teva's excess inventory donation pilot (Path A, Teva-initiated donations to Direct Relief). You support the site supply chain lead and the Access to Medicines programme manager at step A-01: you recommend, they decide. Answer from the JSON context only; never invent products, figures or rules. Be concise and concrete: short paragraphs or a short list, plain text, no markdown headers, no bold. Refer to candidates by product and ID. When asked to draft something (a Gate summary, an A-05 email), produce the draft directly. If the user asks you to approve or reject a candidate, use the tool and confirm what you did. All figures are illustrative pilot data.`;
+function addMsg(role,text,cls=''){const m=el(`<div class="msg ${role} ${cls}"></div>`); m.textContent=text; $('#msgs').appendChild(m); $('#msgs').scrollTop=1e9; return m;}
+function canned(q){
+  const s=q.toLowerCase();
+  if(s.includes('salbutamol')||s.includes('first')) return CANDIDATES[0].product+' ('+CANDIDATES[0].id+') is first because it clears every check with margin: 14.8 months of shelf life at receipt, priority 1 on the Direct Relief needs list, no compliance blocker, and the largest value line this cycle at '+fmtEur(CANDIDATES[0].cost)+'. Nothing about it needs an exception, so it can go straight to the Gate.';
+  if(s.includes('this cycle')||s.includes('lost')||s.includes('urgent')) return 'One candidate is on the clock. Ibuprofen 400 mg (C-2616) has 6.8 months of shelf life at receipt and crosses the 6-month floor in 25 days. If the offer is not submitted within two weeks it becomes ineligible and 30,000 units go to destruction. Everything else on the list has more than 9 months.';
+  if(s.includes('reject')||s.includes('dr ')||s.includes('direct relief')) return 'Two open candidates carry real A-09 risk. Omeprazole 20 mg (C-2615) is not on this month\'s DR needs list at all; fit is 38. P-0033, the omeprazole case from week 2, was declined for exactly that reason after three assessments and an offer. I would hold C-2615 for next month\'s list refresh. Losartan 50 mg (C-2617) is on the list but one requesting country needs an import permit; offer it for the other two countries only.';
+  if(s.includes('gate')&&s.includes('p-0034')) return 'Gate summary, P-0034, Azithromycin 250 mg, batch AZ7701C, 4,800 units.\n\nRecommendation: proceed.\nFinancial (A-02-1): '+fmtEur(16000)+' cost avoided, Finance method.\nPatient reach (A-02-2): 800 courses, Medical Affairs model.\nEnvironmental (A-02-3): 0.7 t CO2e, estimate only, ESG data file still pending.\nDR fit: priority 2 on the current needs list. Shelf life at receipt 13 months, no exception needed. No compliance blocker.\nOpen item: the environmental figure is an estimate. Suggest the Gate proceeds and ESG confirms before A-08.';
+  if(s.includes('environment')||s.includes('esg')) return 'The A-02-3 environmental figure is an estimate on every case because the ESG data file does not exist yet. The pilot uses a per-kilogram destruction factor as a placeholder. Until ESG provides the file, the sustainability line on the readout should be labelled as an estimate. This is a data gap, not an agent gap.';
+  return 'I can explain any ranking on the list, flag what must be decided this cycle, estimate A-09 risk, or draft a Gate summary or A-05 email for a case. Which one?';
+}
+async function ask(q){
+  if(!q.trim()) return; addMsg('u',q); $('#ask').value=''; $('#send').disabled=true;
+  const think=addMsg('a','Thinking…','think');
+  try{
+    if(sample){
+      history.push({role:'user',content:q});
+      const turns=[{role:'user',content:SYSTEM+'\n\nCONTEXT JSON:\n'+agentContext()+'\n\nConversation so far follows.'},{role:'assistant',content:'Understood. I will answer only from the context.'},...history.slice(-8)];
+      const ctrl=new AbortController(); let acted='';
+      const res=await sample(turns,{cache:false,signal:ctrl.signal,onText:u=>{think.classList.remove('think'); think.textContent=u.text;},
+        tools:[
+          {name:'approve_candidate',description:'Approve a candidate at A-01 and open a case. Only when the user explicitly asks to approve.',inputSchema:{type:'object',properties:{id:{type:'string'}},required:['id']},execute:({id})=>{const c=approve(String(id)); acted+=(c?`Approved ${id} → case ${c}. `:`Could not approve ${id}. `); return {ok:!!c,caseId:c||null};}},
+          {name:'reject_candidate',description:'Reject a candidate at A-01 with a short reason. Only when the user explicitly asks to reject.',inputSchema:{type:'object',properties:{id:{type:'string'},reason:{type:'string'}},required:['id','reason']},execute:({id,reason})=>{reject(String(id),String(reason)); acted+=`Rejected ${id}. `; return {ok:true};}}
+        ]});
+      think.classList.remove('think'); think.textContent=res.text; history.push({role:'assistant',content:res.text});
+      if(acted){const a=el('<span class="act"></span>'); a.textContent=acted.trim(); think.appendChild(a);}
+    } else {
+      await new Promise(r=>setTimeout(r,500)); think.classList.remove('think'); think.textContent=canned(q);
+    }
+  }catch(e){
+    think.classList.remove('think');
+    think.textContent=(e&&e.text)||('The agent could not answer ('+((e&&e.code)||'error')+'). '+canned(q));
+    if(e&&e.code==='rate_limited') $('#send').disabled=true, setTimeout(()=>$('#send').disabled=false,15000);
+  }
+  $('#send').disabled=false; $('#msgs').scrollTop=1e9;
+}
+function initAgent(){
+  addMsg('a',`Morning. This week's list has ${CANDIDATES.filter(c=>c.elig!=='fail').length} candidates after pre-screen, 2 excluded by rule. One needs a decision this cycle: Ibuprofen 400 mg (C-2616) crosses the 6-month floor in 25 days. Salbutamol (C-2611) and Amoxicillin (C-2612) are the strongest cases for the Gate. Ask me why, or tell me to approve or reject any of them.`);
+  const st=$('#starters'); STARTERS.forEach(s=>{const b=el('<button></button>'); b.textContent=s; b.onclick=()=>ask(s); st.appendChild(b);});
+  $('#send').onclick=()=>ask($('#ask').value);
+  $('#ask').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask($('#ask').value);}});
+  $('#agentMode').textContent='Answers are scripted until the live agent connects.';
+}
+
+/* ---------- Wiring ---------- */
+function renderAll(){renderCandStrip();renderCandTable();renderDrawer();renderCases();renderReadout();renderRules();}
+document.querySelectorAll('.nav button[data-view]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.view));});
+$('#candFilter').onclick=e=>{const b=e.target.closest('button'); if(!b) return; filter=b.dataset.f; $('#candFilter').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); renderCandTable();};
+$('#candTbl').addEventListener('click',e=>{
+  const tr=e.target.closest('tr.cand'); if(!tr) return; const id=tr.dataset.id; const act=e.target.closest('[data-act]');
+  if(act){ if(act.dataset.act==='approve') approve(id); else { selected=id; renderCandTable(); renderDrawer(); $('#drawer').scrollIntoView({behavior:'smooth',block:'nearest'}); } return; }
+  selected=selected===id?null:id; renderCandTable(); renderDrawer(); if(selected) $('#drawer').scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+$('#drawer').addEventListener('click',e=>{const a=e.target.closest('[data-act]'); if(!a||!selected) return; const k=a.dataset.act; if(k==='approve') approve(selected); else if(k==='reject') reject(selected,$('#rejReason').value); else if(k==='undo') undo(selected);});
+$('#caseList').addEventListener('click',e=>{const b=e.target.closest('[data-case]'); if(!b) return; selCase=b.dataset.case; renderCases();});
+$('#caseRec').addEventListener('click',e=>{const g=e.target.closest('[data-g]'); if(g) caseAction(g.dataset.g);});
+$('#caseRec').addEventListener('change',e=>{const f=e.target.dataset.f; if(!f) return; const k=state.cases[selCase]; k[f]=+e.target.value; if(f==='env') k.envEst=false; persist(); renderCases(); renderReadout();});
+function setAgent(open){ $('#body').classList.toggle('agent-hidden',!open); $('#body').classList.toggle('agent-open',open&&window.innerWidth<=820); }
+$('#toggleAgent').onclick=()=>setAgent($('#body').classList.contains('agent-hidden')||window.innerWidth<=820&&!$('#body').classList.contains('agent-open'));
+$('#closeAgent').onclick=()=>setAgent(false);
+
+loadLocal(); renderAll(); initAgent();
+
+(async()=>{
+  try{ db=await claude.use('db'); }catch(e){ db=null; }
+  if(db){
+    const pill=$('#syncPill'); pill.classList.add('on'); pill.innerHTML='<i></i>Shared with viewers';
+    try{
+      const snap=await stateDoc().get();
+      if(snap.exists) applyRemote(snap.data()); else persist();
+      stateDoc().onSnapshot(s=>{ if(s.exists && !s.metadata.hasPendingWrites) applyRemote(s.data()); },()=>{});
+    }catch(e){}
+  }
+  try{ sample=await claude.use('sample'); }catch(e){ sample=null; }
+  if(sample){ $('#agentMode').textContent='Live agent. Answers come from Claude, reading this page\'s list, rules and decisions. It can approve or reject when you ask.'; $('#agentStatus').textContent='Live · reads the list, rules, cases and readout'; }
+})();
+</script>
