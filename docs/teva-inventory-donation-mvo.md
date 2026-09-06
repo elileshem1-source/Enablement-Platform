@@ -44,6 +44,48 @@ Today, donation opportunities are found too late, evaluated manually, executed s
 
 ---
 
+## 4a. As-is process mapping (Path A — Teva-initiated)
+
+Source: Path A swimlane, as-is. Steps A-03, A-04 and A-06 are absent from the diagram; confirm whether they were removed or live in Path B.
+
+| Step | Owner lane | Tooling today | What it tells us |
+|---|---|---|---|
+| A-01 Opportunity Detection | AtM Program Mgr | IAR Power BI / Excel tracker | Detection is pull-based and owned by the programme, not by the people who hold the stock. Supply chain is not in the loop until A-07. |
+| A-02-1 Financial impact | Finance & Tax | Tax file, PLM | Three assessments run in parallel, each in a different file, all needed before the gate. |
+| A-02-2 Patient reach | Medical Affairs | Patient reach model | Same. |
+| A-02-3 Environmental impact | ESG | Impact data, file TBD | The data source does not exist yet. Likely the slowest of the three and the one most often skipped. |
+| Gate: Proceed? | Finance + Supply Chain leadership | Meeting / email | First decision point, reached only after all three assessments. |
+| A-05 Case initiation | AtM | Email template to market | Hand-off by email. |
+| A-07 Offer preparation | Teva market | Material Data Sheet | First time the market touches the case. |
+| A-08 Offer submission | AtM | Email to Direct Relief | Single NGO partner. |
+| A-09 DR accepts? | Direct Relief | Their call | Acceptance is decided after all Teva-side work is done. |
+| A-09b Allowed? | Global Compliance + market + DR | Manual review | Compliance is also decided last. |
+| A-10 Shipment | Teva entity + DR | Manual coordination | |
+| A-11 Closure & impact | AtM | Fin / patient / env package | Re-assembles the same three A-02 assessments by hand. |
+
+### What the as-is changes in the MVO
+
+1. **The NGO is already fixed.** Direct Relief is the only recipient in Path A, so "Agent 2: Matching" is not a Path A problem. The real matching question is "will DR accept this?" and it is asked at A-09, after every upstream step. Matching in this MVO becomes a **pre-screen at A-01** against DR's current needs list, not a multi-NGO recommender. Multi-NGO matching belongs to Path B (NGO-initiated requests), if it exists.
+2. **Two late gates create the waste.** A-09 (DR accepts) and A-09b (compliance) sit at the end. Every rejection there throws away three assessments, a leadership gate, a market hand-off and an offer. The MVO should count how often that happens. If it is frequent, moving a light DR-fit and compliance check to A-01 is a bigger win than faster detection.
+3. **Detection sits with the wrong lane.** A-01 is owned by AtM working from an IAR report and an Excel tracker. Supply chain, who see stock ageing first, only appear at A-07. The MVO candidate list should be delivered to the supply chain lane and the AtM PM together, at A-01.
+4. **A-11 is free if A-02 is captured properly.** The closure package is the three assessments re-typed. If the MVO logs A-02 outputs in one structured record per case, "Agent 4: Impact" is a report, not an agent.
+5. **The environmental data file is a blocker, not a feature.** A-02-3 says "file TBD". Until that exists the sustainability figure in the value line is an estimate. Say so on the readout slide rather than hide it.
+
+### Metrics to add from the as-is
+
+| Metric | Where measured | Why |
+|---|---|---|
+| Days from IAR flag to Gate decision | A-01 to Gate | Direct measure of how long the three assessments take |
+| Days from Gate to A-08 submission | Gate to A-08 | Hand-off latency through A-05 and A-07 |
+| % of cases rejected at A-09 or A-09b | A-09, A-09b | Wasted upstream work; the case for pre-screening |
+| % of cases with no environmental figure | A-02-3 | Data gap size |
+
+### Revised MVO scope, one line
+
+> At A-01, give the AtM PM and the site supply chain lead a weekly ranked list of at-risk stock that is pre-screened for DR fit and obvious compliance blockers, and log every case from A-01 to Gate in one record so A-11 becomes a query.
+
+---
+
 ## 5. Hypothesis
 
 > If supply chain and CSR see a weekly, ranked list of donation-eligible inventory **at least N days before the current identification point**, then the share of that inventory donated (vs. written off / destroyed) will rise measurably within one pilot cycle.
@@ -57,13 +99,13 @@ N and the baseline are unknown today. Establishing them is the first deliverable
 ### In scope
 - **One market or distribution site** (pick one with a known write-off history and a willing site lead).
 - **One product family** with clear donation eligibility rules (avoid controlled substances, cold chain, and narrow-regulation products for the pilot).
-- **One pre-approved NGO partner** with an existing agreement and known needs list.
-- **One agent capability:** Opportunity Discovery (Agent 1), delivering a weekly ranked list of donation candidates with rationale.
+- **Direct Relief as the single recipient**, matching Path A as-is; use their current needs list for the pre-screen.
+- **One agent capability:** Opportunity Discovery (Agent 1) at step A-01, delivering a weekly ranked list of donation candidates pre-screened for DR fit and obvious compliance blockers, with rationale.
 - **Human decision loop:** a named person approves or rejects each candidate; the agent recommends, people decide.
 - **Manual execution and manual impact line:** approvals, documentation, logistics, and the impact figure are done by hand and logged in a shared tracker.
 
 ### Out of scope (deliberately)
-- Automated NGO matching across many partners.
+- Automated NGO matching across many partners (Path B territory, not Path A).
 - Approval orchestration, reminders, or risk alerts.
 - Logistics milestone tracking.
 - Executive dashboard or automated value reporting.
