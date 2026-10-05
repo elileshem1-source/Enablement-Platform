@@ -1,0 +1,954 @@
+<title>Hackathon Toolfinder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky top bar + tabs; Finder = question rail (left) beside a live stack blueprint (right). Teva brand palette, green leads. */
+:root{
+  --bg:#F3F4F1; --surface:#FFFFFF; --surface-2:#E9ECE6; --ink:#2B2E2B; --text:#424242; --muted:#6B706A; --line:#DADED6;
+  --green:#00A03B; --green-ink:#FFFFFF; --green-soft:#E0F2E5; --green-deep:#007A2D;
+  --blue:#00567A; --teal:#00ACA8; --teal-2:#3C7E79; --lime:#AFCB37; --magenta:#AA198D; --red:#FB3449;
+  --st-strategic:#00A03B; --st-approved:#00567A; --st-conditional:#3C7E79; --st-pilot:#AA198D; --st-legacy:#D92A3E; --st-planned:#8A8F88; --st-service:#008E8A; --st-confirm:#7C9420;
+  --shadow:0 1px 2px rgba(30,40,30,.06),0 8px 24px -12px rgba(30,40,30,.18);
+  --font:"Teva Sans","Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:12px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1311; --surface:#161B18; --surface-2:#1E2521; --ink:#EEF2ED; --text:#D3D9D2; --muted:#93A095; --line:#2A332D;
+  --green:#2BC765; --green-ink:#06210F; --green-soft:#16301F; --green-deep:#5BDB8A;
+  --blue:#4FA8CF; --teal:#2FD0CB; --teal-2:#6FB3AD; --lime:#C4DD5A; --magenta:#E05BC6; --red:#FF6B7A;
+  --st-strategic:#2BC765; --st-approved:#4FA8CF; --st-conditional:#6FB3AD; --st-pilot:#E05BC6; --st-legacy:#FF6B7A; --st-planned:#8C978F; --st-service:#2FD0CB; --st-confirm:#C4DD5A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1311; --surface:#161B18; --surface-2:#1E2521; --ink:#EEF2ED; --text:#D3D9D2; --muted:#93A095; --line:#2A332D;
+  --green:#2BC765; --green-ink:#06210F; --green-soft:#16301F; --green-deep:#5BDB8A;
+  --blue:#4FA8CF; --teal:#2FD0CB; --teal-2:#6FB3AD; --lime:#C4DD5A; --magenta:#E05BC6; --red:#FF6B7A;
+  --st-strategic:#2BC765; --st-approved:#4FA8CF; --st-conditional:#6FB3AD; --st-pilot:#E05BC6; --st-legacy:#FF6B7A; --st-planned:#8C978F; --st-service:#2FD0CB; --st-confirm:#C4DD5A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{color:var(--ink);margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:6px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar-in{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap;padding-block:8px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--ink);font-size:16px;white-space:nowrap}
+.brand-mark{width:28px;height:28px;border-radius:8px;background:var(--green);display:grid;place-items:center;color:var(--green-ink)}
+.brand small{display:block;font-weight:500;color:var(--muted);font-size:11px;font-family:var(--mono);letter-spacing:.04em}
+.tabs{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.tab{border:0;background:none;padding:8px 14px;border-radius:999px;cursor:pointer;font-weight:600;font-size:14px;color:var(--muted);white-space:nowrap}
+.tab:hover{color:var(--ink);background:var(--surface-2)}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+
+/* hero */
+.hero{padding-block:36px 20px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:28px;align-items:end}
+.hero h1{font-size:clamp(30px,4.4vw,50px);line-height:1.04;font-weight:800;letter-spacing:-.025em}
+.hero h1 em{font-style:normal;color:var(--green)}
+.hero p.lede{margin-top:14px;font-size:17px;max-width:58ch;color:var(--text)}
+.dropin{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:grid;gap:10px;box-shadow:var(--shadow)}
+.dropin-top{display:flex;align-items:center;gap:10px}
+.pulse{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 color-mix(in srgb,var(--green) 60%,transparent);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.dropin h3{font-size:15px}
+.dropin ul{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:13.5px}
+.dropin li{display:flex;gap:8px}
+.dropin li svg{flex:none;margin-top:3px;color:var(--green)}
+.dropin .fine{font-size:12.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin-top:22px}
+.stat b{display:block;font-size:26px;color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat span{font-size:12.5px;color:var(--muted)}
+
+/* panels */
+.panel{padding-block:8px 64px}
+.finder{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:24px;align-items:start}
+.qcol{display:grid;gap:14px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.q-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.q-num{font-family:var(--mono);font-size:12px;color:var(--green);font-weight:500}
+.q h3{font-size:15px}
+.q .sub{font-size:12.5px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.goals{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px;text-align:left;cursor:pointer;display:grid;gap:4px;transition:border-color .15s,background .15s,transform .15s}
+.opt:hover{border-color:color-mix(in srgb,var(--green) 55%,var(--line))}
+.opt svg{color:var(--muted)}
+.opt b{font-size:13.5px;color:var(--ink);font-weight:600;line-height:1.25}
+.opt span{font-size:12px;color:var(--muted);line-height:1.35}
+.opt[aria-pressed="true"]{border-color:var(--green);background:var(--green-soft);box-shadow:inset 0 0 0 1px var(--green)}
+.opt[aria-pressed="true"] svg{color:var(--green)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-weight:500}
+.chip:hover{border-color:color-mix(in srgb,var(--green) 55%,var(--line))}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .tick{display:none}
+.chip[aria-pressed="true"] .tick{display:inline}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg .opt{padding:9px 10px}
+.reset{justify-self:start;border:0;background:none;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+/* result */
+.result{display:grid;gap:16px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;min-width:0}
+.res-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:start}
+.res-head h2{font-size:26px;font-weight:800;margin-top:4px}
+.res-head p{margin-top:6px;max-width:62ch}
+.meter{display:grid;gap:6px;justify-items:end;text-align:right}
+.meter-bars{display:flex;gap:3px}
+.meter-bars i{width:22px;height:8px;border-radius:2px;background:var(--surface-2)}
+.meter-bars i.on{background:var(--green)}
+.meter small{font-size:12px;color:var(--muted)}
+.meter b{font-size:13px;color:var(--ink)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.tag{font-size:12px;border-radius:6px;padding:3px 8px;background:var(--surface-2);color:var(--text)}
+
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:18px;position:relative}
+.stage{padding:0 10px;position:relative;min-width:0}
+.stage:first-child{padding-left:0}
+.stage:last-child{padding-right:0}
+.stage + .stage{border-left:1px dashed var(--line)}
+.stage-h{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.stage-n{width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:11px;display:grid;place-items:center;flex:none}
+.stage-h b{font-size:13px;color:var(--ink)}
+.stage-h div span{font-size:11.5px;color:var(--muted);display:block;line-height:1.2}
+.stage + .stage::before{content:"";position:absolute;left:-7px;top:5px;width:12px;height:12px;border-top:1.5px solid var(--muted);border-right:1.5px solid var(--muted);transform:rotate(45deg);background:var(--surface)}
+.picks{display:grid;gap:8px}
+.pick{border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:var(--surface);cursor:pointer;text-align:left;display:grid;gap:3px;width:100%;transition:transform .15s,border-color .15s}
+.pick:hover{transform:translateY(-1px);border-color:var(--muted)}
+.pick.primary{border-color:var(--green);background:linear-gradient(var(--green-soft),var(--green-soft)) padding-box}
+.pick-top{display:flex;align-items:center;gap:6px;min-width:0}
+.pick-top b{font-size:13.5px;color:var(--ink);font-weight:650;line-height:1.2;min-width:0}
+.pick p{font-size:12px;color:var(--muted);line-height:1.35}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--c,var(--muted))}
+.star{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--green-deep);letter-spacing:.05em;text-transform:uppercase;flex:none}
+.empty-stage{font-size:12px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:10px}
+
+.side3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.side3 .card{padding:16px}
+.mini-h{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.mini-h h3{font-size:14px}
+.mini-list{display:grid;gap:6px}
+.mini{display:flex;gap:8px;align-items:flex-start;border:0;background:none;text-align:left;cursor:pointer;padding:4px 0;width:100%}
+.mini .dot{margin-top:6px}
+.mini b{font-size:13px;color:var(--ink);font-weight:600;display:block}
+.mini span{font-size:12px;color:var(--muted);line-height:1.35;display:block}
+.mini:hover b{text-decoration:underline;text-underline-offset:3px}
+
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:10px}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:10px;font-size:14px}
+ol.steps li::before{content:counter(s);width:24px;height:24px;border-radius:7px;background:var(--green-soft);color:var(--green-deep);font-family:var(--mono);font-size:12px;display:grid;place-items:center;font-weight:500}
+.warn{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.warn li{font-size:13.5px;padding:8px 10px 8px 12px;border-radius:8px;background:color-mix(in srgb,var(--red) 7%,var(--surface));border-left:3px solid var(--red)}
+.warn li.info{background:color-mix(in srgb,var(--blue) 7%,var(--surface));border-left-color:var(--blue)}
+.sme{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.sme span{font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;display:inline-flex;gap:6px;align-items:center}
+.sme span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--teal)}
+
+.brief{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:16px}
+.field{display:grid;gap:4px;font-size:12.5px;color:var(--muted);font-weight:500}
+.field input,.field textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;resize:vertical}
+.field input:focus,.field textarea:focus{outline:2px solid var(--green);outline-offset:0;border-color:transparent}
+pre.brief-out{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px;font-family:var(--mono);font-size:12px;line-height:1.55;white-space:pre-wrap;overflow-x:auto;max-height:360px;overflow-y:auto;color:var(--text)}
+.btn{border:0;background:var(--green);color:var(--green-ink);font-weight:650;padding:10px 16px;border-radius:9px;cursor:pointer;font-size:14px;display:inline-flex;gap:8px;align-items:center}
+.btn:hover{filter:brightness(1.05)}
+.btn.ghost{background:var(--surface-2);color:var(--ink)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* blueprints */
+.sec-head{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.sec-head h2{font-size:28px;font-weight:800}
+.sec-head p{max-width:60ch;color:var(--muted);margin-top:4px}
+.bp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.bp{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:10px;align-content:start}
+.bp-top{display:flex;gap:10px;align-items:center}
+.bp-ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--green-soft);color:var(--green-deep);flex:none}
+.bp h3{font-size:16px}
+.bp .area{font-size:11.5px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em}
+.bp p{font-size:13.5px}
+.bp .stackline{display:flex;flex-wrap:wrap;gap:4px}
+.bp .stackline span{font-size:11.5px;padding:2px 7px;border-radius:5px;background:var(--surface-2)}
+.bp .demo{font-size:12.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+.bp .demo b{color:var(--ink);font-weight:600}
+.bp .btn{justify-self:start;margin-top:2px;padding:8px 13px;font-size:13px}
+
+/* landscape */
+.viz{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;margin-bottom:18px}
+.statusbar{display:flex;height:34px;border-radius:8px;overflow:hidden;margin:12px 0}
+.statusbar button{border:0;cursor:pointer;background:var(--c);min-width:4px;position:relative;transition:filter .15s,opacity .15s}
+.statusbar button:hover{filter:brightness(1.1)}
+.statusbar button span{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-family:var(--mono);font-size:11px;font-weight:500}
+.statusbar.filtering button:not(.on){opacity:.25}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px}
+.legend button{border:0;background:none;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12.5px;padding:2px 0;color:var(--text)}
+.legend button[aria-pressed="true"]{color:var(--ink);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.legend em{font-style:normal;color:var(--muted);font-family:var(--mono);font-size:11.5px}
+.matrix{display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));gap:4px;margin-top:12px;font-size:12px}
+.matrix .mh{color:var(--muted);font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;align-self:end;padding-bottom:2px;text-align:center}
+.matrix .rh{color:var(--muted);font-size:12px;align-self:center;padding-right:6px;white-space:nowrap}
+.cell{border:0;border-radius:6px;height:42px;cursor:pointer;background:color-mix(in srgb,var(--green) calc(var(--k) * 1%),var(--surface-2));color:var(--ink);font-family:var(--mono);font-size:13px;font-weight:500}
+.cell.hot{color:var(--green-ink)}
+.cell[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.search{flex:1 1 260px;position:relative;min-width:0}
+.search input{width:100%;font:inherit;font-size:14px;padding:10px 12px 10px 36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.count{font-size:13px;color:var(--muted)}
+.cat{margin-bottom:22px}
+.cat-h{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.cat-h h3{font-size:15px}
+.cat-h span{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.tile{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:11px 12px;text-align:left;cursor:pointer;display:grid;gap:6px;align-content:start;transition:border-color .15s,transform .15s}
+.tile:hover{border-color:var(--muted);transform:translateY(-1px)}
+.tile-top{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.tile b{font-size:13.5px;color:var(--ink);font-weight:650;line-height:1.25}
+.kind{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 5px;flex:none}
+.tile .cap{font-size:12px;color:var(--muted)}
+.tile-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 11%,transparent);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c)}
+.fit{display:flex;gap:2px}
+.fit i{width:6px;height:6px;border-radius:50%;background:var(--surface-2)}
+.fit i.on{background:var(--green)}
+.none{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+
+/* which one */
+.cmp-grid{display:grid;gap:16px}
+.cmp{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.cmp-h{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:12px}
+.cmp-h h3{font-size:18px}
+.cmp-h p{color:var(--muted);font-size:13.5px}
+.cmp-rows{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.cmp-o{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:6px;align-content:start;cursor:pointer;background:var(--surface);text-align:left}
+.cmp-o:hover{border-color:var(--muted)}
+.cmp-o.best{border-color:var(--green);background:var(--green-soft)}
+.cmp-o b{font-size:14px;color:var(--ink)}
+.cmp-o .when{font-size:13px}
+.cmp-o .avoid{font-size:12px;color:var(--muted)}
+.cmp-o .badge{font-family:var(--mono);font-size:10px;color:var(--green-deep);text-transform:uppercase;letter-spacing:.06em}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(10,15,12,.45);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--surface);z-index:41;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column;border-left:1px solid var(--line);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.drawer.open{transform:none}
+.dr-head{padding:20px 22px 14px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.dr-close{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;border:0;background:var(--surface-2);width:32px;height:32px;border-radius:8px;cursor:pointer;display:grid;place-items:center}
+.dr-head h2{font-size:22px;padding-right:40px}
+.dr-body{padding:18px 22px;overflow-y:auto;display:grid;gap:18px;align-content:start}
+.dr-body h4{font-size:12px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:500;margin-bottom:6px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;color:var(--ink)}
+.callout{background:var(--green-soft);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--ink)}
+.callout.amber{background:color-mix(in srgb,var(--magenta) 10%,var(--surface))}
+.pairs{display:flex;flex-wrap:wrap;gap:6px}
+.pairs button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:12.5px;cursor:pointer}
+.pairs button:hover{border-color:var(--green)}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.2s;z-index:50;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+footer{border-top:1px solid var(--line);padding-block:20px 40px;font-size:12.5px;color:var(--muted)}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+@media (max-width:1020px){
+  .finder{grid-template-columns:1fr}
+  .side3{grid-template-columns:1fr}
+  .viz{grid-template-columns:1fr}
+  .hero{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .flow{grid-template-columns:1fr 1fr;row-gap:18px}
+  .stage:nth-child(3){padding-left:0;border-left:0}
+  .stage:nth-child(3)::before{display:none}
+  .two,.brief{grid-template-columns:1fr}
+  .res-head{grid-template-columns:1fr}
+  .meter{justify-items:start;text-align:left}
+  .tabs{margin-left:0;width:100%}
+  .wrap{padding-inline:16px}
+}
+@media (max-width:480px){
+  .flow{grid-template-columns:1fr}
+  .stage{padding:0!important;border-left:0!important}
+  .stage::before{display:none}
+  .goals{grid-template-columns:1fr}
+  .q .sub{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="bar">
+  <div class="wrap bar-in">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></span>
+      <span>Hackathon Toolfinder<small>TEVA FINANCE HACKATHON · BUILD PHASE</small></span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" id="tab-finder" aria-controls="p-finder" data-tab="finder">Find my stack</button>
+      <button class="tab" role="tab" id="tab-blueprints" aria-controls="p-blueprints" data-tab="blueprints">Finance blueprints</button>
+      <button class="tab" role="tab" id="tab-catalog" aria-controls="p-catalog" data-tab="catalog">Tool landscape</button>
+      <button class="tab" role="tab" id="tab-compare" aria-controls="p-compare" data-tab="compare">Which one?</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <div>
+      <div class="eyebrow">From problem definition to solution</div>
+      <h1>Know your problem. <em>Find the right Teva tools</em> to build it.</h1>
+      <p class="lede">Answer four questions and get an approved stack, first build steps, the watch-outs, and a brief to bring to the Technical Guidance drop-in.</p>
+      <div class="stats" id="stats"></div>
+    </div>
+    <aside class="dropin" aria-label="Technical Guidance Sessions">
+      <div class="dropin-top"><span class="pulse" aria-hidden="true"></span><h3>Technical Guidance drop-ins · twice a week</h3></div>
+      <ul>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>Evaluate technical options for your use case</li>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>Get pointed to the right tools and capabilities</li>
+        <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>Meet the SMEs who can help you start</li>
+      </ul>
+      <p class="fine">Your team designs and builds the solution. Sessions remove technical uncertainty; they don't provide developers. Accept the invite so organizers can plan capacity.</p>
+    </aside>
+  </section>
+
+  <!-- FINDER -->
+  <section class="wrap panel" id="p-finder" role="tabpanel" aria-labelledby="tab-finder">
+    <div class="finder">
+      <div class="qcol" id="questions"></div>
+      <div class="result" id="result" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- BLUEPRINTS -->
+  <section class="wrap panel" id="p-blueprints" role="tabpanel" aria-labelledby="tab-blueprints" hidden>
+    <div class="sec-head">
+      <div><div class="eyebrow">Start from a proven shape</div><h2>Finance blueprints</h2>
+      <p>Common finance hackathon problems, each mapped to an approved stack. Pick the closest one and adjust the answers to fit your team.</p></div>
+    </div>
+    <div class="bp-grid" id="bp-grid"></div>
+  </section>
+
+  <!-- CATALOG -->
+  <section class="wrap panel" id="p-catalog" role="tabpanel" aria-labelledby="tab-catalog" hidden>
+    <div class="sec-head">
+      <div><div class="eyebrow">Approved tools &amp; platforms at Teva</div><h2>Tool landscape</h2>
+      <p>Every item from the approved catalog, sorted by what it does. Click a bar, a cell or a tile to filter and dig in.</p></div>
+    </div>
+    <div class="viz">
+      <div class="card">
+        <div class="eyebrow">Lifecycle status</div>
+        <div class="statusbar" id="statusbar" role="group" aria-label="Filter by status"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Hackathon fit × build skill</div>
+        <div class="matrix" id="matrix"></div>
+      </div>
+    </div>
+    <div class="filters">
+      <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="Search: dashboard, translate, forecast, approval…" aria-label="Search tools"></label>
+      <div class="chips" id="kindchips"></div>
+      <button class="reset" id="clearf" type="button">Clear filters</button>
+      <span class="count" id="count"></span>
+    </div>
+    <div id="catalog"></div>
+  </section>
+
+  <!-- COMPARE -->
+  <section class="wrap panel" id="p-compare" role="tabpanel" aria-labelledby="tab-compare" hidden>
+    <div class="sec-head">
+      <div><div class="eyebrow">The questions teams ask most</div><h2>Which one should we use?</h2>
+      <p>Side-by-side picks for the tools people mix up. The green card is the usual hackathon default.</p></div>
+    </div>
+    <div class="cmp-grid" id="cmp"></div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>Based on the approved Teva tool &amp; platform catalog shared for the Finance Hackathon. Licensing and access vary by person — confirm at a Technical Guidance Session.</span><span class="mono">v1 · build phase</span></div></footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dr-title" aria-hidden="true">
+  <button class="dr-close" id="dr-close" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <div class="dr-head" id="dr-head"></div>
+  <div class="dr-body" id="dr-body"></div>
+</aside>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- DATA: approved catalog ---------- */
+const CATS={
+  conv:"Conversation AI Assistants / Agents", collab:"Collaboration & Meeting Mgmt.", trans:"Translation",
+  create:"Images & File Generation", learn:"Learning & Video Creation", task:"Task Management",
+  auto:"Automation & Software Development", cloud:"Cloud Infrastructure & Operations", data:"Data Analytics",
+  gov:"Data Governance & Management", priv:"Data Governance, Privacy & Compliance", aigov:"AI Governance & Assurance"
+};
+const STATUS={
+  strategic:{label:"Strategic standard",c:"var(--st-strategic)",hint:"The enterprise default. Build here first."},
+  approved:{label:"Approved",c:"var(--st-approved)",hint:"Approved for use within its recommended scope."},
+  conditional:{label:"Conditional",c:"var(--st-conditional)",hint:"Use only when the standard option can't meet the need."},
+  pilot:{label:"Pilot only",c:"var(--st-pilot)",hint:"Controlled pilot. Use only if your team is enrolled; don't plan to scale."},
+  confirm:{label:"Confirm access",c:"var(--st-confirm)",hint:"Named in the hackathon invitation but not in the approved catalog. Confirm at a drop-in."},
+  legacy:{label:"Legacy",c:"var(--st-legacy)",hint:"Kept for existing workloads during migration. No new builds."},
+  service:{label:"Employee service",c:"var(--st-service)",hint:"A finished service you use, not a platform to build on."},
+  planned:{label:"Planned",c:"var(--st-planned)",hint:"Not available yet. Pending vendor or solution selection."}
+};
+const SKILL={1:"No-code",2:"Low-code",3:"Pro-code"};
+const FIT={3:"Core build",2:"Useful",1:"Situational",0:"Not for builds"};
+// [id, kind, name, cat, capability, description, recommended use, status, hackathonFit 0-3, skill 1-3]
+const RAW=[
+["copilot-chat","Tool","Copilot Chat (Basic)","conv","General AI Chat & Drafting","Browser-based AI assistant for general questions, drafting, summarization, brainstorming, and lightweight coding support without requiring licensed Microsoft 365 work context.","Use for quick, low-risk questions, brainstorming, summarization, and drafting that does not require deep Microsoft 365 work context.","approved",2,1],
+["m365-copilot","Tool","Microsoft 365 Copilot (Premium)","conv","Context-Aware Productivity Assistance","AI assistant embedded across Microsoft 365 applications that uses permitted work context to draft, summarize, analyze, and create content.","Use when licensed users need AI assistance grounded in their permitted emails, meetings, files, and Microsoft 365 application context.","approved",3,1],
+["copilot-notebook","Tool","Copilot Notebook","conv","Source-Grounded Research & Synthesis","Source-grounded Copilot workspace that synthesizes selected files, emails, meetings, and chats into focused briefs, summaries, and plans.","Use to synthesize a defined collection of files, emails, meetings, and chats into a focused brief, summary, or action plan.","approved",2,1],
+["tevagpt","Tool","TevaGPT","conv","Enterprise Knowledge Q&A","Internal generative AI assistant that uses retrieval-augmented generation to answer questions from approved Teva documents and data.","Use as the preferred assistant for questions involving approved internal or regulated Teva knowledge and documentation.","strategic",3,1],
+["askhr","Tool","AskHR","conv","HR Virtual Assistance","Employee-facing HR virtual assistant that provides 24/7 policy, benefits, leave, and case-support guidance through Teams and desktop channels.","Use as the first employee channel for routine HR policies, benefits, leave, and case-routing questions.","service",0,1],
+["it-va","Tool","IT Virtual Agent","conv","IT Service Virtual Assistance","Employee-facing IT support assistant that handles common requests, troubleshooting, ticket creation, and ticket-status enquiries before service-desk escalation.","Use as the first employee channel for common IT issues, access requests, password support, and ticket-status enquiries.","service",0,1],
+["teams","Tool","Microsoft Teams","collab","Team Collaboration & Meetings","Enterprise collaboration service for chat, channels, meetings, calling, and shared-file teamwork.","Use for everyday team communication, meetings, calls, channels, and collaborative file work.","approved",2,1],
+["loop","Tool","Microsoft Loop","collab","Collaborative Workspaces","Collaborative workspace for creating portable, real-time components such as agendas, notes, task lists, and project content across Microsoft 365.","Use for lightweight, live co-authoring of agendas, notes, task lists, and reusable content across Microsoft 365.","approved",1,1],
+["outlook","Tool","Outlook","collab","Email & Calendaring","Enterprise email, calendar, contacts, and scheduling application for internal and external communication.","Use for formal email, external communication, personal calendars, invitations, and meeting scheduling.","approved",1,1],
+["sharepoint","Tool","SharePoint Online & OneDrive","collab","Document Management & File Sharing","Microsoft 365 services for governed team sites, document libraries, intranet content, personal cloud storage, and secure file sharing.","Use as the default Microsoft 365 location for governed team documents, intranet content, personal files, and secure sharing.","approved",3,1],
+["forms","Tool","Microsoft Forms","collab","Forms, Surveys & Quizzes","Microsoft 365 application for creating surveys, polls, quizzes, registrations, and structured response collections.","Use for simple surveys, polls, quizzes, registrations, and structured information collection.","approved",3,1],
+["lists","Tool","Microsoft Lists","collab","Structured List Tracking","Lightweight Microsoft 365 application for tracking structured items, requests, issues, inventories, and simple workflows.","Use for lightweight tracking of requests, issues, inventories, actions, or other structured team records.","approved",3,1],
+["whiteboard","Tool","Microsoft Whiteboard","collab","Visual Collaboration & Whiteboarding","Digital canvas for collaborative brainstorming, workshops, sketching, and visual idea mapping.","Use for workshops, brainstorming, visual ideation, and collaborative free-form planning.","approved",2,1],
+["bookings","Tool","Microsoft Bookings","collab","Appointment Scheduling","Appointment-scheduling application that publishes available time slots and synchronizes bookings with Outlook calendars.","Use when internal or external users need to select available appointment or service time slots.","approved",1,1],
+["confluence-tool","Tool","Atlassian Confluence","collab","Enterprise Wiki & Documentation","Enterprise collaboration and knowledge-management tool for creating, organizing, and governing team documentation, standards, and project content.","Use for governed team knowledge, delivery documentation, standards, procedures, and project artefacts requiring structured spaces.","approved",1,1],
+["teams-premium","Tool","Microsoft Teams Premium","collab","Intelligent Meetings & Live Translation","Teams add-on providing enhanced meeting intelligence, live translation, meeting protection, and advanced event capabilities.","Use for meetings requiring advanced protection, intelligent recaps, live translation, or enhanced event capabilities.","approved",0,1],
+["onenote","Tool","OneNote","collab","Digital Note-Taking","Digital notebook for organizing free-form notes, research, meeting records, drawings, and supporting files.","Use for personal or shared free-form notes, research, meeting records, and reference material.","approved",1,1],
+["copilot-translate","Tool","M365 Copilot / Copilot Chat (translation)","trans","AI-Assisted Translation","AI-assisted translation option for translating or rewriting text and documents through Copilot experiences.","Use for convenient AI-assisted translation or rewriting when specialized document handling is not required.","approved",1,1],
+["ms-translator","Tool","Microsoft Translator in M365","trans","AI-Assisted Translation","Built-in Microsoft 365 translation service for selected text, documents, captions, and subtitles.","Use for built-in translation of selected text, Office documents, captions, and subtitles within Microsoft 365.","approved",1,1],
+["teva-translate","Tool","Teva Translate","trans","AI-Assisted Translation","Internal translation service for multiple document formats and languages, including layout preservation and optical character recognition.","Use for internal multilingual documents that require file-format support, layout preservation, or OCR.","approved",2,1],
+["snagit","Tool","Snagit","create","Screen Capture & Recording","Screen-capture and lightweight recording tool for creating annotated screenshots, short videos, and instructional visuals.","Use to capture and annotate screens or create short instructional recordings and visual guides.","approved",2,1],
+["copilot-create","Tool","Microsoft 365 Copilot Create","create","AI Content Generation","AI-assisted Microsoft 365 creation experience for generating visual content, slide concepts, outlines, and branded drafts from prompts.","Use to rapidly generate first drafts of visuals, slide concepts, outlines, and branded content from prompts.","approved",2,1],
+["copilot-office","Tool","M365 Copilot for Office Apps & Outlook","create","AI Writing & Summarization","AI writing assistant in Word and Outlook for drafting, summarizing, rewriting, and improving documents and messages.","Use to draft, summarize, rewrite, and improve documents or emails within Word and Outlook.","approved",2,1],
+["copilot-excel","Tool","Microsoft 365 Copilot for Excel","create","Conversational Data Analysis","AI analysis assistant in Excel for exploring data, creating formulas and visualizations, and identifying trends or anomalies through natural-language requests.","Use to explore spreadsheet data, generate formulas and charts, and identify trends or anomalies through natural language.","approved",3,1],
+["copilot-ppt","Tool","Microsoft 365 Copilot for PowerPoint","create","AI Presentation Generation","AI presentation assistant that creates and refines slide decks from prompts, documents, and existing presentation content.","Use to create or refine presentation drafts from prompts, documents, notes, or existing slides.","approved",3,1],
+["visio","Tool","Microsoft Visio","create","Process & Technical Diagramming","Professional diagramming application for process maps, organizational charts, system architectures, network diagrams, and technical flows.","Use for formal process maps, organizational charts, network diagrams, and technical architecture documentation.","approved",2,1],
+["lucidchart","Tool","Lucidchart","create","Process & Technical Diagramming","Cloud-based collaborative diagramming application for process maps, system designs, flowcharts, and real-time visual collaboration.","Use for collaborative cloud-based diagramming when teams require real-time editing and cross-platform participation.","approved",2,1],
+["adobe","Tool","Adobe Creative Cloud (Express & Acrobat)","create","Creative Design & PDF Management","Creative and document suite for producing branded visual content and creating, editing, converting, signing, and managing PDF files.","Use for professional visual design, branded assets, and advanced PDF creation, editing, conversion, signing, or management.","approved",1,1],
+["prezent","Tool","Prezent","create","AI Presentation Generation","AI-assisted presentation platform for generating company-branded slides, improving storylines, and applying design standards.","Use to create company-branded presentations quickly and improve slide design and storyline consistency.","approved",2,1],
+["myteva-search","Tool","myteva AI Search","conv","Enterprise Knowledge Search","Natural-language enterprise search tool for finding and summarizing information published on the myteva intranet.","Use to find and summarize information published on the myteva intranet through natural-language queries.","approved",1,1],
+["clipchamp","Tool","Clipchamp","learn","Video Editing","Cloud-based video editor for recording, trimming, combining, captioning, and publishing simple videos from templates and media assets.","Use for straightforward editing, captioning, and publishing of recorded or template-based business videos.","approved",2,1],
+["synthesia","Tool","Synthesia","learn","AI Avatar Video Generation","AI video-generation tool that creates narrated videos with virtual presenters from scripts in multiple languages.","Use to produce multilingual presenter-led videos from scripts without filming people or studios.","approved",1,1],
+["vyond","Tool","Vyond","learn","Animated Video Creation","Animated-video authoring tool for creating character-based explainers, training content, and business stories.","Use to create animated explainers, training scenarios, and character-based business stories.","approved",1,1],
+["guidde","Tool","Guidde","learn","Guided Tutorial Creation","AI-assisted documentation tool that converts screen recordings into narrated, step-by-step video guides and how-to content.","Use to turn screen-based processes into narrated step-by-step tutorials and software guidance.","approved",2,1],
+["genially","Tool","Genially","learn","Interactive Learning Content","Interactive content-authoring platform for presentations, infographics, quizzes, and digital learning experiences.","Use to build interactive presentations, infographics, quizzes, and engaging learning experiences.","approved",1,1],
+["planner","Tool","Microsoft Planner","task","Team Task Planning","Team task-management application for organizing work through plans, boards, assignments, due dates, and progress tracking.","Use for team-level task boards, assignments, due dates, and straightforward progress tracking.","approved",2,1],
+["planner-premium","Tool","Microsoft Planner Premium (Plan 1 & 3)","task","Portfolio & Project Planning","Advanced project-planning service with timelines, dependencies, milestones, goals, workload views, and reporting.","Use for projects requiring timelines, dependencies, milestones, workload views, goals, and advanced reporting.","approved",1,1],
+["todo","Tool","Microsoft To Do","task","Personal Task Management","Personal task-management application for daily priorities, reminders, recurring tasks, and individual lists.","Use for personal daily priorities, reminders, recurring tasks, and individual follow-ups; use Planner or Jira when work requires team ownership, dependencies, or governed delivery.","approved",0,1],
+["jira-tool","Tool","Atlassian Jira","task","Agile Work & Issue Tracking","Enterprise work-management tool for structured project delivery, issue tracking, backlogs, workflows, and agile team planning.","Use for structured project, backlog, issue, and workflow management where enterprise configuration and governance are required.","approved",1,1],
+["power-automate","Tool","Power Automate","auto","Workflow Automation","Low-code Microsoft service for automating approvals, notifications, data movement, and repetitive workflows across connected applications.","Use for low-code approvals, notifications, integrations, and repetitive workflows across Microsoft and connected services.","approved",3,2],
+["power-apps","Tool","Power Apps","auto","Low-Code App Development","Low-code Microsoft platform for building custom business applications, forms, and process interfaces connected to enterprise data.","Use to build low-code business applications and forms connected to governed enterprise data and workflows.","approved",3,2],
+["github-copilot","Tool","GitHub Copilot","auto","AI Coding Assistance","AI coding assistant that provides contextual code completion, generation, explanation, and development support within supported engineering environments.","Use to assist developers with code completion, generation, explanation, refactoring, and tests inside supported development environments.","approved",3,3],
+["ms-cowork","Tool","Microsoft Cowork","conv","Agentic Knowledge Work","Microsoft-based agentic work assistant for non-developers, currently positioned as a controlled pilot for multi-step knowledge-work tasks.","Use only within the approved pilot for Microsoft-based, multi-step agentic knowledge-work scenarios; do not scale before the bake-off decision.","pilot",1,1],
+["anthropic-cowork","Tool","Anthropic Cowork","conv","Agentic Knowledge Work","Claude-based agentic work assistant for non-developers, currently positioned as a controlled pilot for multi-step knowledge-work tasks.","Use only within the approved pilot for Claude-based, multi-step agentic knowledge-work scenarios; do not scale before the bake-off decision.","pilot",1,1],
+["copilot-studio","Tool","Copilot Studio","conv","Low-Code Agent Building","Microsoft low-code environment for building custom copilots and agents with topics, knowledge sources, and actions.","Named in the hackathon invitation alongside Power Automate and Power Apps, but not listed in the approved catalog. Confirm availability at a Technical Guidance Session before planning around it.","confirm",2,2],
+["azure","Platform","Azure","cloud","Cloud Compute, Storage & Networking","Enterprise public-cloud foundation providing compute, storage, networking, security, and managed services for the data and AI estate.","Use as the default enterprise cloud foundation for approved compute, storage, networking, security, data, and AI workloads.","strategic",2,3],
+["sap-bdc","Platform","SAP Business Data Cloud (BDC)","data","SAP Data Products & Federation","SAP-managed data platform for governed SAP data products, federated access, and integration of business data across SAP environments.","Use to publish and access governed SAP data products and federate SAP business data across the enterprise architecture.","approved",1,3],
+["datasphere","Platform","SAP Datasphere","data","SAP Semantic Modeling & Warehousing","SAP cloud data-warehouse and semantic-modeling service used to integrate, model, and serve governed SAP business data.","Use for SAP-centric data integration, semantic modelling, warehousing, and migration of eligible SAP BW content.","approved",2,3],
+["databricks","Platform","Databricks (ADB)","data","Lakehouse, Data Engineering & AI","Enterprise lakehouse platform for data engineering, analytics, machine learning, model operations, and agentic AI workloads on Azure.","Use as the strategic lakehouse for large-scale data engineering, analytics, machine learning, and agentic AI workloads.","strategic",3,3],
+["sac","Platform","SAP Analytics Cloud (SAC)","data","SAP Analytics & Planning","SAP-native cloud service for business intelligence, enterprise reporting, planning, and forecasting across SAP-connected data.","Use primarily for SAP-integrated planning and reporting that cannot be served appropriately through the enterprise Power BI standard.","conditional",2,2],
+["anthropic-claude","Platform","Anthropic (Claude)","conv","Large Language Model APIs","Provider of Claude large-language models used through governed APIs for enterprise generative AI and agentic use cases.","Use as the primary governed production LLM for approved enterprise generative AI and agentic use cases routed through the AI gateway.","strategic",3,3],
+["openai","Platform","OpenAI","conv","Large Language Model APIs","Provider of GPT large-language-model APIs retained to support governed generative AI use cases and multi-model optionality.","Use when an approved use case requires GPT capabilities or multi-model resilience not adequately provided by the primary LLM.","conditional",1,3],
+["ai-foundry","Platform","Azure AI Foundry / Agentic","conv","AI Agent Development & Orchestration","Azure-based development and orchestration environment for building, evaluating, governing, and operating enterprise AI agents and model-powered applications.","Use to build, evaluate, orchestrate, register, and govern enterprise AI agents and model-powered applications on Azure.","strategic",3,3],
+["knowledge-graph","Platform","Knowledge Graph / Semantic Layer","data","Enterprise Semantics & Ontology","Enterprise semantic layer and ontology capability that links concepts and data across domains to support consistent analytics and AI reasoning.","Use when analytics or AI solutions require consistent enterprise concepts, relationships, and cross-domain reasoning.","approved",1,3],
+["power-bi","Platform","Microsoft Power BI","data","Enterprise BI & Visualization","Enterprise business-intelligence platform for governed semantic models, interactive dashboards, reports, visual analysis, and self-service analytics.","Use as the enterprise standard for governed dashboards, reports, semantic models, and self-service visual analytics.","strategic",3,2],
+["tableau","Platform","Tableau","data","Enterprise BI & Visualization","Legacy departmental business-intelligence platform for interactive dashboards and visual analytics, retained only for residual workloads pending migration.","Use only for supported residual dashboards during migration; do not create new workloads where Power BI meets the requirement.","legacy",0,2],
+["informatica-idmc","Platform","Informatica IDMC","gov","Data Integration, Catalog & Quality","Cloud data-management platform providing data integration, cataloguing, lineage, marketplace, data-quality, and governance capabilities.","Use for enterprise data integration, cataloguing, lineage, marketplace, data-quality, and governance processes.","approved",1,3],
+["r360","Platform","Informatica Reference 360 (R360)","gov","Reference Data Management","Reference-data management service for governing shared code sets, classifications, hierarchies, and reference values across systems.","Use to govern shared reference values, code sets, classifications, and hierarchies across multiple systems.","approved",0,3],
+["c360","Platform","Informatica Customer 360 (MDM)","gov","Customer Master Data Management","Customer master-data management service for matching, consolidating, governing, and improving trusted customer records.","Use to create and govern trusted customer master records across contributing business systems.","approved",0,3],
+["unity-catalog","Platform","Unity Catalog","gov","Lakehouse Catalog, Lineage & Access","Databricks-native governance service for cataloguing data and AI assets, controlling access, and capturing lineage across the lakehouse.","Use for Databricks-native cataloguing, lineage, permissions, and governance of lakehouse data and AI assets.","approved",1,3],
+["mlflow","Platform","MLflow","data","Model Lifecycle, Registry & Tracking","Model-lifecycle platform for experiment tracking, model packaging, registry, evaluation, deployment support, and operational governance.","Use as the standard lifecycle service for experiment tracking, model registry, evaluation, packaging, and deployment governance.","strategic",2,3],
+["onetrust","Platform","OneTrust","priv","Privacy Management & Policy Enforcement","Privacy and data-governance platform for managing privacy obligations, consent, data-use policies, and access-control requirements.","Use for privacy assessments, consent and obligation management, data-use policies, and governed access-control requirements.","approved",1,2],
+["saidot","Platform","Saidot","aigov","AI Risk Assessment & Evidence Management","AI governance application for classifying AI-system risk, managing assessments and evidence, and maintaining an auditable review trail.","Use as the system of record for AI risk classification, assessments, supporting evidence, approvals, and audit trails.","strategic",2,1],
+["datarobot","Platform","DataRobot","data","Automated Machine Learning","Automated machine-learning platform for developing, validating, deploying, and monitoring predictive models with reduced manual modelling effort.","Use only for existing or justified AutoML workloads while assessing migration to Databricks ML and MLflow at renewal.","legacy",0,2],
+["automation-anywhere","Platform","Automation Anywhere (RPA)","auto","Robotic Process Automation","Enterprise robotic-process-automation platform for building and operating software bots that execute repetitive, rules-based tasks across systems.","Use for high-volume, rules-based automation spanning legacy applications where API or low-code integration is impractical.","conditional",2,2],
+["jira-platform","Platform","Jira (Atlassian)","task","Agile Work & Issue Tracking","Enterprise agile delivery platform for managing work, backlogs, issues, workflows, releases, and delivery reporting across teams.","Use as the governed enterprise platform for agile delivery, backlogs, issues, workflows, releases, and team reporting.","approved",1,1],
+["confluence-platform","Platform","Confluence (Atlassian)","collab","Enterprise Wiki & Documentation","Enterprise knowledge platform for maintaining delivery documentation, standards, procedures, decisions, and project artefacts.","Use for governed delivery knowledge, procedures, standards, decisions, and project documentation linked to Jira workflows.","approved",1,1],
+["devops-github","Platform","Azure DevOps & GitHub Enterprise","auto","Source Control, CI/CD & AI Coding","Enterprise software-development platform combining source control, collaboration, security, CI/CD integration, and AI-assisted coding.","Use as the strategic engineering platform for source control, code collaboration, security, CI/CD integration, and AI-assisted development.","strategic",2,3],
+["tosca","Platform","Tosca (Tricentis)","auto","Automated & Model-Based Testing","Enterprise test-automation platform for model-based functional testing, regression coverage, and quality assurance across business applications.","Use for repeatable automated regression and model-based testing of complex or regulated business applications.","approved",0,3],
+["power-platform","Platform","Microsoft Power Platform","auto","Citizen Development & Automation","Enterprise low-code platform combining Power Apps and Power Automate for citizen-developed applications, workflows, and process automation.","Use as the governed enterprise platform for citizen-developed applications, workflow automation, and low-code process solutions.","strategic",3,2],
+["splunk","Platform","Splunk (Observability)","cloud","Log Analytics & Operational Observability","Observability and log-analytics platform for collecting, searching, correlating, and monitoring operational machine data and events.","Use for existing on-premises log analytics and operational monitoring while evaluating consolidation with native cloud observability.","legacy",0,3],
+["coursera","Platform","Coursera + LinkedIn Learning","learn","Digital Learning & Skills Development","Digital learning platforms providing on-demand courses and skills development for enterprise data, AI, technology, and business capability building.","Use for approved self-paced data, AI, technology, and business-skills development aligned with enterprise learning programs.","approved",2,1],
+["qlik-legacy","Platform","Qlik / QlikView / Cognos / Oracle / Hyperion","data","Legacy BI & Financial Reporting","Combined legacy reporting, dashboarding, analytics, and financial-consolidation estate targeted for migration to strategic BI and SAP platforms.","Use only to maintain required legacy reporting and consolidation during migration to Power BI, SAP Datasphere, or other strategic platforms.","legacy",0,2],
+["anonymization","Platform","Anonymization Tool","priv","Data Anonymization & Synthetic Data","Planned capability for anonymizing sensitive data and generating synthetic datasets to enable privacy-safe analytics, testing, and AI use cases.","Use after vendor selection to prepare privacy-safe datasets for regulated analytics, testing, data science, and AI use cases.","planned",0,2],
+["data-sharing","Platform","Data Sharing Platform","gov","Governed External Data Sharing","Planned governed service for securely exchanging data with external partners or regulators through controlled sharing and clean-room patterns.","Use after solution selection for governed external data collaboration with partners or regulators through controlled sharing patterns.","planned",0,3],
+["obs-guardrails","Platform","Observability Guardrails (AI)","aigov","Runtime AI Monitoring & Guardrails","Planned runtime control layer for monitoring AI systems, logging prompts and responses, applying guardrails, and detecting quality or model drift.","Use after solution selection to monitor production AI behavior, log interactions, enforce runtime controls, and detect drift.","planned",0,3],
+["data-mgmt-automation","Platform","Data Management Automation","gov","Metadata Discovery, Lineage & Impact","Planned metadata-automation capability for discovering data assets, tracing lineage, and assessing the downstream impact of data changes.","Use after evaluation to automate metadata discovery, lineage capture, and impact analysis across the data estate.","planned",0,3],
+["kore","Platform","Kore.ai Platform","conv","Conversational AI Development Platform","Enterprise conversational-AI development platform used to build, deploy, integrate, and govern virtual assistants such as AskHR and the IT Virtual Agent.","Use as the governed build platform for reusable conversational assistants; manage AskHR and the IT Virtual Agent as deployed solutions on it.","approved",1,3]
+];
+const TOOLS=RAW.map(r=>({id:r[0],kind:r[1],name:r[2],cat:r[3],cap:r[4],desc:r[5],use:r[6],status:r[7],fit:r[8],skill:r[9]}));
+const T=Object.fromEntries(TOOLS.map(t=>[t.id,t]));
+const CATALOG_COUNT=TOOLS.filter(t=>t.status!=="confirm").length;
+
+const PAIRS={
+  "power-automate":["forms","lists","teams","sharepoint","power-apps"],"power-apps":["lists","power-automate","sharepoint","teams"],
+  "power-bi":["copilot-excel","databricks","datasphere","teams"],"databricks":["unity-catalog","mlflow","power-bi","ai-foundry"],
+  "ai-foundry":["anthropic-claude","saidot","databricks","devops-github"],"anthropic-claude":["ai-foundry","saidot","github-copilot"],
+  "tevagpt":["sharepoint","copilot-notebook","myteva-search"],"m365-copilot":["copilot-notebook","copilot-excel","copilot-office"],
+  "copilot-excel":["power-bi","sharepoint","copilot-ppt"],"forms":["power-automate","lists"],"lists":["power-automate","power-apps","forms"],
+  "automation-anywhere":["power-automate","lists"],"datasphere":["sap-bdc","power-bi","sac"],"sac":["datasphere","sap-bdc"],
+  "copilot-studio":["power-automate","sharepoint","teams","saidot"],"mlflow":["databricks","unity-catalog"],
+  "copilot-ppt":["prezent","copilot-create","guidde"],"guidde":["clipchamp","snagit"],"tableau":["power-bi"],"qlik-legacy":["power-bi","datasphere"],
+  "datarobot":["databricks","mlflow"],"saidot":["onetrust","ai-foundry"],"teva-translate":["sharepoint","ms-translator"],
+  "anthropic-cowork":["ms-cowork","m365-copilot"],"ms-cowork":["anthropic-cowork","m365-copilot"],"kore":["ai-foundry","anthropic-claude"]
+};
+const SME_OF={
+  "power-automate":"Power Platform (Power Automate / Power Apps)","power-apps":"Power Platform (Power Automate / Power Apps)","power-platform":"Power Platform (Power Automate / Power Apps)","copilot-studio":"Power Platform (Power Automate / Power Apps)",
+  "power-bi":"Data & Analytics — Power BI","sac":"SAP analytics & planning (SAC)","datasphere":"SAP data — Datasphere / BDC access","sap-bdc":"SAP data — Datasphere / BDC access",
+  "databricks":"Databricks platform","mlflow":"Databricks platform","unity-catalog":"Databricks platform",
+  "ai-foundry":"AI platform — Azure AI Foundry & AI gateway","anthropic-claude":"AI platform — Azure AI Foundry & AI gateway","kore":"Conversational AI — Kore.ai",
+  "saidot":"AI governance — Saidot","onetrust":"Privacy — OneTrust","automation-anywhere":"RPA — Automation Anywhere",
+  "tevagpt":"TevaGPT & Microsoft 365 Copilot adoption","m365-copilot":"TevaGPT & Microsoft 365 Copilot adoption","copilot-excel":"TevaGPT & Microsoft 365 Copilot adoption","copilot-notebook":"TevaGPT & Microsoft 365 Copilot adoption","copilot-office":"TevaGPT & Microsoft 365 Copilot adoption",
+  "anthropic-cowork":"Cowork pilot owners","ms-cowork":"Cowork pilot owners","azure":"Cloud — Azure","devops-github":"Engineering — Azure DevOps & GitHub"
+};
+
+/* ---------- QUESTIONS ---------- */
+const IC={
+  automate:'<path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/>',
+  app:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16M9 13h6M9 16h4"/>',
+  insight:'<path d="M4 20V11M10 20V5M16 20v-6M3 20h18"/>',
+  knowledge:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M10 8.5a2 2 0 1 1 2.5 1.9c-.4.2-.5.5-.5 1"/>',
+  agent:'<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z"/>',
+  predict:'<path d="M3 17l6-6 4 4 7-7"/><path d="M15 8h5v5"/>',
+  content:'<path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6M9 13h8M9 17h5"/>',
+  legacy:'<rect x="4" y="7" width="16" height="12" rx="2"/><path d="M12 3v4M9 12h.01M15 12h.01M9 15.5h6"/>'
+};
+const svg=(k,s=18)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`;
+const GOALS=[
+  {id:"automate",label:"Automate a repetitive process",hint:"Approvals, reminders, moving data"},
+  {id:"app",label:"Give people an app or form",hint:"Capture, review and approve records"},
+  {id:"insight",label:"Analyze data & build a dashboard",hint:"KPIs, variances, drill-downs"},
+  {id:"knowledge",label:"Answer questions from documents",hint:"Policies, procedures, contracts"},
+  {id:"content",label:"Draft or summarize reports",hint:"Commentary, memos, packs"},
+  {id:"predict",label:"Forecast or predict",hint:"Cash, demand, risk scores"},
+  {id:"agent",label:"Build an AI agent",hint:"Reasons and takes multi-step actions"},
+  {id:"legacy",label:"Automate clicks in legacy screens",hint:"No API, rules-based, high volume"}
+];
+const SOURCES=[
+  {id:"excel",label:"Excel / SharePoint files"},{id:"sap",label:"SAP (S/4, BW)"},{id:"databricks",label:"Databricks / lakehouse"},
+  {id:"email",label:"Outlook & Teams"},{id:"pdf",label:"PDFs & scanned documents"},{id:"docs",label:"Policies & internal docs"}
+];
+const SKILLS=[
+  {id:"no",label:"No-code",hint:"Excel & Teams power users"},
+  {id:"low",label:"Low-code",hint:"Built a flow or app before"},
+  {id:"pro",label:"Pro-code",hint:"Python, SQL, APIs"}
+];
+const SENS=[
+  {id:"general",label:"General",hint:"Public or non-sensitive"},
+  {id:"internal",label:"Internal",hint:"Teva-internal business data"},
+  {id:"confidential",label:"Confidential",hint:"Financials, personal or bank data"}
+];
+const EXTRAS=[
+  {id:"approvals",label:"Approvals & sign-off"},{id:"schedule",label:"Runs on a schedule"},
+  {id:"languages",label:"Multiple languages"},{id:"tracking",label:"Track items & status"}
+];
+const DEFAULT={goal:"automate",sources:["email","pdf"],skill:"low",sens:"confidential",extras:["approvals"]};
+
+let S=loadState();
+function loadState(){
+  try{const v=JSON.parse(localStorage.getItem("tf-state")||"null"); if(v&&v.goal) return v;}catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT));
+}
+function saveState(){try{localStorage.setItem("tf-state",JSON.stringify(S))}catch(e){}}
+
+/* ---------- ENGINE ---------- */
+function recommend(s){
+  const L={plan:[],capture:[],store:[],brain:[],deliver:[],guard:[],pitch:[]};
+  const add=(lane,id,why,primary)=>{const x=L[lane].find(p=>p.id===id); if(x){if(primary)x.primary=true; return;} L[lane].push({id,why,primary:!!primary});};
+  const has=(lane,id)=>L[lane].some(p=>p.id===id);
+  const src=new Set(s.sources), ex=new Set(s.extras);
+  const no=s.skill==="no", low=s.skill==="low", pro=s.skill==="pro", conf=s.sens==="confidential";
+  const watch=[], info=[], q=[];
+  let name="", summary="", steps=[];
+
+  switch(s.goal){
+  case "automate":
+    name="Automated workflow"; summary="A flow that picks up each item, routes it to the right person and updates the record, so nobody chases status by email.";
+    if(src.has("email")) add("capture","outlook","Flow starts when a matching email arrives"); else add("capture","forms","Intake form that starts the flow");
+    add("store","lists","One row per item: status, owner, due date");
+    add("brain","power-automate","Runs the steps: route, approve, notify, update",true);
+    if(pro) add("brain","azure","Custom code (e.g. Functions) where no connector exists");
+    add("deliver","teams","Approvals and alerts where people already work",true);
+    steps=["Map today's process on Whiteboard: every handoff, wait and rework loop","Create the Microsoft List that tracks each item and its status","Build the flow in Power Automate, starting from a template","Run it end to end with 5 realistic sample items and time it"];
+    if(no) watch.push("Power Automate is low-code. Pair your most hands-on teammate with a Power Platform SME in the first drop-in.");
+    break;
+  case "app":
+    name="Business app"; summary="A purpose-built app for entering, reviewing and approving records, backed by a governed list and simple automation.";
+    add("capture","power-apps","App screens to enter, review and approve records",true);
+    if(no) add("capture","forms","Start here if simple intake is enough");
+    add("store","lists","Backing table for the app");
+    add("store","sharepoint","Documents linked to each record");
+    add("brain","power-automate","Logic behind the buttons: approvals, emails, updates");
+    if(pro) add("brain","github-copilot","Speeds up custom components and scripts");
+    add("deliver","teams","Pin the app as a Teams tab",true);
+    steps=["Sketch the three screens you need (list, detail, form) on Whiteboard","Create the Microsoft List with the fields the app captures","Generate a Power App from the list, then tailor the screens","Add a Power Automate flow for the approval or notification step"];
+    if(no) watch.push("Power Apps is low-code, not no-code. If nobody has built one, start with Forms + Lists and add Power Apps later.");
+    break;
+  case "insight":
+    name="Analytics dashboard"; summary="Governed finance data shaped into an interactive dashboard that answers your question at a glance and drills to the detail.";
+    if(no){add("brain","copilot-excel","Explore the data, build formulas and charts in plain language",true); add("deliver","power-bi","Publish here once the analysis is stable");}
+    else if(low){add("brain","copilot-excel","Explore the extract before you model it"); add("deliver","power-bi","Model the data and build the dashboard",true);}
+    else {add("brain","databricks","Clean, join and aggregate large datasets",true); add("deliver","power-bi","Enterprise standard for dashboards",true);}
+    if(src.has("sap")) add("deliver","sac","Only if you need SAP-integrated planning Power BI can't do");
+    add("deliver","teams","Share the report in your team channel");
+    steps=["Write the 3 questions the dashboard must answer, in finance terms","Get a sample extract and sanity-check totals against the ledger","Build the model and the first page","Add one drill-down that tells the story in your demo"];
+    info.push("Build new dashboards in Power BI. Tableau and the Qlik/Cognos estate are legacy and closed to new work.");
+    break;
+  case "knowledge":
+    name="Knowledge assistant"; summary="An assistant that answers finance questions from approved documents and shows the source behind every answer.";
+    add("store","sharepoint","Curated, current source documents in one library",true);
+    if(no){add("brain","tevagpt","Preferred assistant for internal and regulated Teva knowledge",true); add("brain","copilot-notebook","Grounds answers in a fixed set of your files");}
+    else if(low){add("brain","copilot-studio","Custom Q&A agent over your SharePoint library",true); add("brain","tevagpt","Benchmark your answers against the internal assistant");}
+    else {add("brain","ai-foundry","Build, evaluate and govern your own retrieval assistant",true); add("brain","anthropic-claude","Primary governed LLM, via the AI gateway"); add("brain","kore","If it should become a reusable enterprise assistant");}
+    add("deliver","teams","Where people ask the question",true);
+    steps=["Collect 10–20 source documents and remove outdated versions","Write 15 real questions with correct answers: this is your test set","Build version one and score it against the test set","Show the answer plus its source link in the demo"];
+    watch.push("Answers are only as good as the documents. An expired policy produces a confident, wrong answer.");
+    break;
+  case "agent":
+    name="AI agent"; summary="An agent that reasons over finance data and takes multi-step actions, with a person approving anything that matters.";
+    if(no){add("brain","anthropic-cowork","Multi-step knowledge work, if your team is in the pilot",true); add("brain","ms-cowork","Microsoft-based alternative, pilot only"); add("brain","m365-copilot","Fallback if you are not in a pilot");
+      watch.push("Cowork tools are controlled pilots. Use them only if your team is enrolled, and don't plan to scale before the bake-off decision.");}
+    else if(low){add("brain","copilot-studio","Agent with knowledge sources and actions",true); add("brain","power-automate","The actions your agent triggers");}
+    else {add("brain","ai-foundry","Build, evaluate and orchestrate the agent",true); add("brain","anthropic-claude","Primary governed LLM, via the AI gateway"); add("brain","github-copilot","Faster coding of tools and tests"); add("store","devops-github","Source control for the agent code");}
+    add("deliver","teams","Human-in-the-loop approvals and results",true);
+    steps=["Write the agent's job description: inputs, decisions, outputs","List each action it may take and mark which need human approval","Get one happy-path run working end to end before adding tools","Log every step so you can show the reasoning in the demo"];
+    break;
+  case "predict":
+    name="Forecast model"; summary="A forecast you can back-test and explain, shown next to actuals so reviewers can judge its accuracy.";
+    if(no) add("brain","copilot-excel","Spot trends and build a first forecast in Excel",true);
+    else if(low){add("brain","copilot-excel","Prototype the forecast logic",true); add("deliver","power-bi","Forecast vs actuals, with error bands");}
+    else {add("brain","databricks","Feature engineering and model training",true); add("brain","mlflow","Track experiments and register the model"); add("deliver","power-bi","Forecast vs actuals dashboard",true);
+      info.push("DataRobot is for existing workloads only. Start new models in Databricks with MLflow.");}
+    if(src.has("sap")) add("deliver","sac","If the forecast must feed SAP planning");
+    if(no) add("deliver","sharepoint","Share the workbook from a team site");
+    steps=["Pick one target (e.g. weekly cash out) and a fixed horizon","Pull at least two years of history if you can","Back-test: train on the past, predict a period you already know","Present accuracy next to the forecast"];
+    watch.push("Show back-test accuracy and a range, not a single number. Finance reviewers will ask.");
+    break;
+  case "content":
+    name="Report & commentary drafter"; summary="Drafts commentary, memos or packs from the numbers and your sources, with a controller reviewing before anything goes out.";
+    if(pro){add("brain","anthropic-claude","Generates drafts at scale via the AI gateway",true); add("brain","ai-foundry","Prompt evaluation and orchestration"); add("brain","power-automate","Runs on a schedule and routes drafts for review");}
+    else {add("brain","copilot-office","Draft and rewrite in Word and Outlook",true); add("brain","copilot-excel","Explain the movements behind the numbers"); add("brain","copilot-notebook","Combine files, emails and meetings into one brief");}
+    add("deliver","sharepoint","Review library for drafts",true);
+    add("deliver","outlook","Send to reviewers and stakeholders");
+    steps=["Collect three past examples of great commentary as a style guide","Write a reusable prompt that cites the figures it uses","Generate for one entity and month and have a controller review it","Measure time saved against the manual draft"];
+    watch.push("Keep a human reviewer on every number. Generated commentary must tie back to the ledger.");
+    break;
+  case "legacy":
+    name="RPA bot"; summary="A software bot that works through legacy screens step by step, with exceptions routed to a person.";
+    add("brain","automation-anywhere","Bots for screens that have no API",true);
+    add("brain","power-automate","Orchestrates the bot and notifies people");
+    add("store","lists","Exception log with owner and status");
+    add("deliver","teams","Exception alerts to the right person",true);
+    steps=["Record the exact screen steps and every exception you have seen","Confirm a bot environment and test credentials","Automate the happy path first","Route every exception to a named person"];
+    watch.push("RPA is the last resort. First check whether a connector or SAP data product already gives you the data.");
+    break;
+  }
+
+  // data sources
+  if(src.has("excel")) add("store","sharepoint","Working files in a team site, not email attachments");
+  if(src.has("sap")){add("store","datasphere","Governed SAP data models to read from"); watch.push("Request SAP data access on day one. It is the usual bottleneck."); q.push("Which SAP data product or Datasphere model holds our data, and how do we get read access?");}
+  if(src.has("databricks")){add("store","databricks","Lakehouse tables you query"); add("guard","unity-catalog","Permissions and lineage for lakehouse data"); q.push("Can we get a Databricks workspace and a sandbox schema for the hackathon?");}
+  if(src.has("email")){add("capture","outlook","Incoming emails and attachments"); if(s.goal!=="knowledge") add("capture","teams","Requests posted in a channel");}
+  if(src.has("pdf")){add("capture","sharepoint","Drop folder for invoices and scans");
+    if(pro) add("brain","ai-foundry","Extract fields from documents with an LLM");
+    else q.push("Which approved option should we use to read fields from PDFs and scans?");}
+  if(src.has("docs")){add("store","sharepoint","Policies and procedures library"); add("capture","myteva-search","Check what is already published on myteva");}
+
+  // extras
+  if(ex.has("approvals")){add("brain","power-automate","Approval steps with an audit trail"); add("deliver","teams","Approve from Teams or Outlook");}
+  if(ex.has("schedule")) add("brain","power-automate","Runs on a schedule, e.g. every working day at 07:00");
+  if(ex.has("languages")) add("deliver","teva-translate","Translate documents with layout preserved and OCR");
+  if(ex.has("tracking")) add("store","lists","Track each item and its status");
+
+  // sensitivity
+  if(s.sens==="general") add("plan","copilot-chat","Brainstorm and draft with low-risk content only");
+  else add("plan","m365-copilot","Brainstorm inside your permitted work context");
+  if(conf){
+    watch.push("Demo with masked or sample data. The Anonymization Tool is planned, not available yet.");
+    add("guard","onetrust","Privacy assessment if personal or bank data is involved");
+    q.push("Can we use masked production data, or must we use synthetic data?");
+    if(!has("brain","tevagpt") && (s.goal==="knowledge")) add("brain","tevagpt","Preferred for regulated Teva knowledge");
+  }
+  if(s.sens!=="general") info.push("Keep Teva data in approved tools. Copilot Chat (Basic) is for low-risk content only.");
+
+  const builtAI=["copilot-studio","ai-foundry","anthropic-claude","kore","anthropic-cowork","ms-cowork","mlflow"].some(id=>has("brain",id));
+  if(builtAI) add("guard","saidot","Register the AI use case and its risk class");
+
+  // plan & pitch (always)
+  add("plan","whiteboard","Map the as-is and to-be process together");
+  if(["automate","app","legacy"].includes(s.goal)) add("plan","visio","Clean process map for the pitch");
+  add("plan","planner","Split the build across the team, with due dates");
+  add("pitch","copilot-ppt","Turn your notes into a first deck",true);
+  add("pitch","prezent","Teva-branded slides and a tighter storyline");
+  add("pitch","guidde","Narrated walkthrough from a screen recording");
+  add("pitch","clipchamp","Trim and caption a 2-minute demo video");
+
+  // questions
+  const ids=new Set(Object.values(L).flat().map(p=>p.id));
+  if(ids.has("copilot-studio")) q.unshift("Is Copilot Studio available to our team? It's named in the invitation but isn't in the approved catalog.");
+  if(ids.has("anthropic-cowork")||ids.has("ms-cowork")) q.unshift("Is our team enrolled in a Cowork pilot?");
+  if(["m365-copilot","copilot-excel","copilot-office","copilot-notebook","copilot-ppt"].some(i=>ids.has(i))) q.push("Do all teammates have a Microsoft 365 Copilot (Premium) license?");
+  if(ids.has("anthropic-claude")||ids.has("ai-foundry")) q.push("How do we get access to Claude through the AI gateway and an Azure AI Foundry project?");
+  if(ids.has("saidot")) q.push("Does a hackathon prototype need a Saidot risk entry, and who files it?");
+  if(ids.has("automation-anywhere")) q.push("Is there a bot runner and test environment we can use?");
+  if(ids.has("power-apps")||ids.has("power-automate")) q.push("Which Power Platform environment should we build in, and are premium connectors allowed?");
+
+  // complexity from primary picks in the core flow
+  const core=["capture","store","brain","deliver"].flatMap(l=>L[l]);
+  const level=Math.max(1,...core.filter(p=>p.primary).map(p=>T[p.id].skill));
+  const smes=[...new Set([...ids].map(i=>SME_OF[i]).filter(Boolean))];
+  return {name,summary,L,steps,watch,info,q:[...new Set(q)],level,smes};
+}
+
+/* ---------- RENDER: questions ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function renderQuestions(){
+  $("#questions").innerHTML=`
+  <div class="q"><div class="q-head"><span class="q-num">Q1</span><h3>What should your solution do?</h3></div>
+    <div class="goals">${GOALS.map(g=>`<button class="opt" type="button" data-goal="${g.id}" aria-pressed="${S.goal===g.id}">${svg(g.id)}<b>${g.label}</b><span>${g.hint}</span></button>`).join("")}</div></div>
+  <div class="q"><div class="q-head"><span class="q-num">Q2</span><h3>Where does the data live?</h3><span class="sub">Pick all that apply</span></div>
+    <div class="chips">${SOURCES.map(o=>chip("src",o)).join("")}</div></div>
+  <div class="q"><div class="q-head"><span class="q-num">Q3</span><h3>Your team's build comfort</h3></div>
+    <div class="seg">${SKILLS.map(o=>`<button class="opt" type="button" data-skill="${o.id}" aria-pressed="${S.skill===o.id}"><b>${o.label}</b><span>${o.hint}</span></button>`).join("")}</div></div>
+  <div class="q"><div class="q-head"><span class="q-num">Q4</span><h3>How sensitive is the data?</h3></div>
+    <div class="seg">${SENS.map(o=>`<button class="opt" type="button" data-sens="${o.id}" aria-pressed="${S.sens===o.id}"><b>${o.label}</b><span>${o.hint}</span></button>`).join("")}</div></div>
+  <div class="q"><div class="q-head"><span class="q-num">+</span><h3>Also needs</h3><span class="sub">Optional</span></div>
+    <div class="chips">${EXTRAS.map(o=>chip("ex",o)).join("")}</div></div>
+  <button class="reset" type="button" id="reset">Reset to the example</button>`;
+}
+function chip(type,o){const on=type==="src"?S.sources.includes(o.id):S.extras.includes(o.id);
+  return `<button class="chip" type="button" data-${type}="${o.id}" aria-pressed="${on}"><svg class="tick" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg>${o.label}</button>`;}
+
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.goal){S.goal=b.dataset.goal; update();}
+  else if(b.dataset.skill){S.skill=b.dataset.skill; update();}
+  else if(b.dataset.sens){S.sens=b.dataset.sens; update();}
+  else if(b.dataset.src){toggle(S.sources,b.dataset.src); update();}
+  else if(b.dataset.ex){toggle(S.extras,b.dataset.ex); update();}
+  else if(b.id==="reset"){S=JSON.parse(JSON.stringify(DEFAULT)); update(); toast("Back to the example answers");}
+  else if(b.dataset.tool){openDrawer(b.dataset.tool);}
+  else if(b.dataset.tab){showTab(b.dataset.tab,true);}
+  else if(b.dataset.bp){useBlueprint(b.dataset.bp);}
+  else if(b.id==="copy"){copyBrief();}
+});
+function toggle(arr,v){const i=arr.indexOf(v); i>-1?arr.splice(i,1):arr.push(v);}
+function update(){saveState(); renderQuestions(); renderResult();}
+
+/* ---------- RENDER: result ---------- */
+const STAGES=[["capture","Capture","How work comes in"],["store","Store","Where data lives"],["brain","Process","Logic & AI"],["deliver","Deliver","Where users see it"]];
+function pickHTML(p){const t=T[p.id];
+  return `<button class="pick${p.primary?" primary":""}" type="button" data-tool="${p.id}"><span class="pick-top"><i class="dot" style="--c:${STATUS[t.status].c}" title="${STATUS[t.status].label}"></i><b>${esc(t.name)}</b>${p.primary?'<span class="star">Lead</span>':""}</span><p>${esc(p.why)}</p></button>`;}
+function miniHTML(p){const t=T[p.id];
+  return `<button class="mini" type="button" data-tool="${p.id}"><i class="dot" style="--c:${STATUS[t.status].c}"></i><span><b>${esc(t.name)}</b><span>${esc(p.why)}</span></span></button>`;}
+let LAST=null;
+function renderResult(){
+  const r=recommend(S); LAST=r;
+  const goal=GOALS.find(g=>g.id===S.goal);
+  const lvl=["","Starter","Intermediate","Advanced"][r.level];
+  const tags=[SKILLS.find(x=>x.id===S.skill).label+" team",SENS.find(x=>x.id===S.sens).label+" data",...S.sources.map(id=>SOURCES.find(x=>x.id===id).label)];
+  const n=new Set(Object.values(r.L).flat().map(p=>p.id)).size;
+  $("#result").innerHTML=`
+  <div class="card">
+    <div class="res-head">
+      <div><div class="eyebrow">Your recommended stack · ${n} approved tools</div><h2>${esc(r.name)}</h2><p>${esc(r.summary)}</p></div>
+      <div class="meter" title="Based on the most technical lead tool in your stack"><small>Build complexity</small><span class="meter-bars">${[1,2,3].map(i=>`<i class="${i<=r.level?"on":""}"></i>`).join("")}</span><b>${lvl}</b></div>
+    </div>
+    <div class="tags">${tags.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
+    <div class="flow">${STAGES.map(([k,l,h],i)=>`<div class="stage"><div class="stage-h"><span class="stage-n">${i+1}</span><div><b>${l}</b><span>${h}</span></div></div><div class="picks">${r.L[k].length?r.L[k].map(pickHTML).join(""):`<div class="empty-stage">Nothing extra needed here for this pattern.</div>`}</div></div>`).join("")}</div>
+  </div>
+  <div class="side3">
+    <div class="card"><div class="mini-h"><span class="bp-ic">${svg("insight",16)}</span><h3>Plan the build</h3></div><div class="mini-list">${r.L.plan.map(miniHTML).join("")}</div></div>
+    <div class="card"><div class="mini-h"><span class="bp-ic">${shield}</span><h3>Guardrails</h3></div><div class="mini-list">${r.L.guard.length?r.L.guard.map(miniHTML).join(""):'<p class="count">No extra governance tools flagged for this combination. Mention your data at the drop-in anyway.</p>'}</div></div>
+    <div class="card"><div class="mini-h"><span class="bp-ic">${svg("content",16)}</span><h3>Pitch kit</h3></div><div class="mini-list">${r.L.pitch.map(miniHTML).join("")}</div></div>
+  </div>
+  <div class="two">
+    <div class="card"><div class="mini-h"><h3>First four steps</h3></div><ol class="steps">${r.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div>
+    <div class="card"><div class="mini-h"><h3>Watch-outs</h3></div><ul class="warn">${r.watch.map(w=>`<li>${esc(w)}</li>`).join("")}${r.info.map(w=>`<li class="info">${esc(w)}</li>`).join("")}</ul>
+      <div class="mini-h" style="margin-top:16px"><h3>SMEs to ask for at the drop-in</h3></div><div class="sme">${r.smes.map(s=>`<span>${esc(s)}</span>`).join("")}</div></div>
+  </div>
+  <div class="card">
+    <div class="mini-h"><h3>Your drop-in brief</h3><span class="count" style="margin-left:auto">Fill in two lines, copy, and paste it into the session chat</span></div>
+    <div class="brief">
+      <div style="display:grid;gap:10px;align-content:start">
+        <label class="field" for="team">Team name<input id="team" type="text" placeholder="e.g. Close Crew" value="${esc(S.team||"")}"></label>
+        <label class="field" for="problem">Problem in one line<textarea id="problem" rows="4" placeholder="e.g. AP spends 2 days a month chasing invoice exceptions by email">${esc(S.problem||"")}</textarea></label>
+        <div class="row"><button class="btn" id="copy" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg>Copy brief</button></div>
+      </div>
+      <pre class="brief-out" id="brief-out" tabindex="0"></pre>
+    </div>
+  </div>`;
+  $("#team").addEventListener("input",e=>{S.team=e.target.value; saveState(); renderBrief();});
+  $("#problem").addEventListener("input",e=>{S.problem=e.target.value; saveState(); renderBrief();});
+  renderBrief();
+}
+const shield='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>';
+function briefText(){
+  const r=LAST, nm=id=>T[id].name, line=k=>r.L[k].map(p=>nm(p.id)+(p.primary?" (lead)":"")).join(", ")||"—";
+  return [
+`HACKATHON TECHNICAL GUIDANCE · DROP-IN BRIEF`,
+`Team:        ${S.team||"[team name]"}`,
+`Problem:     ${S.problem||"[one line: who is affected, how often, what it costs]"}`,
+`We want to:  ${GOALS.find(g=>g.id===S.goal).label}`,
+`Data:        ${S.sources.map(id=>SOURCES.find(x=>x.id===id).label).join(", ")||"not decided yet"}`,
+`Team skills: ${SKILLS.find(x=>x.id===S.skill).label}`,
+`Sensitivity: ${SENS.find(x=>x.id===S.sens).label}`,
+``,
+`PROPOSED STACK: ${r.name}`,
+`  1 Capture  ${line("capture")}`,
+`  2 Store    ${line("store")}`,
+`  3 Process  ${line("brain")}`,
+`  4 Deliver  ${line("deliver")}`,
+`  Guardrails ${line("guard")}`,
+``,
+`QUESTIONS FOR THE SESSION`,
+...(r.q.length?r.q:["Is this the right stack for our use case?"]).map((x,i)=>`  ${i+1}. ${x}`),
+``,
+`SMEs WE'D LIKE TO MEET`,
+...r.smes.map(x=>`  - ${x}`)
+  ].join("\n");
+}
+function renderBrief(){$("#brief-out").textContent=briefText();}
+function copyBrief(){
+  const txt=briefText();
+  const fallback=()=>{const el=$("#brief-out"); const rg=document.createRange(); rg.selectNodeContents(el); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(rg); toast("Selected. Press Ctrl+C / ⌘C to copy");};
+  try{navigator.clipboard.writeText(txt).then(()=>toast("Brief copied. Paste it into the drop-in chat"),fallback);}catch(e){fallback();}
+}
+let tt; function toast(m){const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),2400);}
+
+/* ---------- BLUEPRINTS ---------- */
+const BPS=[
+ {id:"invoice",area:"Accounts payable",icon:"automate",title:"Invoice exception triage",problem:"Invoices with price or quantity mismatches sit in shared mailboxes until someone chases them.",demo:"An exception email arrives, gets logged and routed, and the buyer approves in Teams.",s:{goal:"automate",sources:["email","pdf"],skill:"low",sens:"confidential",extras:["approvals"]}},
+ {id:"close",area:"Record to report",icon:"app",title:"Month-end close tracker",problem:"Close tasks live in a spreadsheet that is out of date by day two.",demo:"A live close board with owners, due days and automatic reminders.",s:{goal:"app",sources:["excel"],skill:"low",sens:"internal",extras:["tracking","schedule"]}},
+ {id:"variance",area:"FP&A",icon:"content",title:"Variance commentary drafter",problem:"Analysts rewrite the same budget-vs-actual commentary every month.",demo:"Copilot drafts commentary from the variance file; a controller edits and approves.",s:{goal:"content",sources:["excel","sap"],skill:"no",sens:"confidential",extras:[]}},
+ {id:"policy",area:"Finance operations",icon:"knowledge",title:"Finance policy Q&A",problem:"The same T&E and procurement policy questions reach finance every week.",demo:"Ask a question in Teams, get an answer with the policy paragraph it came from.",s:{goal:"knowledge",sources:["docs"],skill:"no",sens:"internal",extras:["languages"]}},
+ {id:"cash",area:"Treasury",icon:"predict",title:"13-week cash forecast",problem:"The cash forecast is built by hand from many inputs and nobody trusts week 8+.",demo:"A back-tested forecast with a range, shown against actuals in Power BI.",s:{goal:"predict",sources:["databricks","sap"],skill:"pro",sens:"confidential",extras:["schedule"]}},
+ {id:"kpi",area:"Controlling",icon:"insight",title:"CFO KPI cockpit",problem:"KPIs come from five reports with different cut-offs and definitions.",demo:"One Power BI page with consistent KPIs and a drill to entity level.",s:{goal:"insight",sources:["sap","databricks"],skill:"low",sens:"internal",extras:[]}},
+ {id:"te",area:"Compliance",icon:"insight",title:"T&E anomaly spotter",problem:"Expense audit samples randomly and misses the patterns that matter.",demo:"A ranked list of unusual claims, with the reason each one was flagged.",s:{goal:"insight",sources:["excel","sap"],skill:"no",sens:"confidential",extras:[]}},
+ {id:"ic",area:"Intercompany",icon:"legacy",title:"Intercompany matching bot",problem:"Analysts match intercompany items line by line across SAP screens.",demo:"A bot matches the clean items and posts the rest to an exception list.",s:{goal:"legacy",sources:["sap"],skill:"low",sens:"confidential",extras:["schedule","tracking"]}},
+ {id:"vendor",area:"Master data",icon:"app",title:"Vendor onboarding app",problem:"New-vendor requests arrive by email with missing fields and bank details in attachments.",demo:"A guided request form with validation and a two-step approval.",s:{goal:"app",sources:["email"],skill:"low",sens:"confidential",extras:["approvals","tracking"]}},
+ {id:"audit",area:"Audit readiness",icon:"agent",title:"Audit request assistant",problem:"Auditor PBC requests in several languages are tracked by hand across countries.",demo:"An agent reads a request, finds the supporting documents and drafts the reply for approval.",s:{goal:"agent",sources:["docs","email"],skill:"pro",sens:"confidential",extras:["languages","approvals","tracking"]}}
+];
+function renderBlueprints(){
+  $("#bp-grid").innerHTML=BPS.map(b=>{const r=recommend(b.s); const lead=["capture","store","brain","deliver"].flatMap(k=>r.L[k]).filter(p=>p.primary).map(p=>T[p.id].name);
+    return `<article class="bp"><div class="bp-top"><span class="bp-ic">${svg(b.icon,17)}</span><div><div class="area">${b.area}</div><h3>${b.title}</h3></div></div>
+      <p>${b.problem}</p><div class="stackline">${[...new Set(lead)].map(n=>`<span>${esc(n)}</span>`).join("")}</div>
+      <p class="demo"><b>Demo moment:</b> ${b.demo}</p>
+      <button class="btn" type="button" data-bp="${b.id}">Use this blueprint →</button></article>`;}).join("");
+}
+function useBlueprint(id){const b=BPS.find(x=>x.id===id); S={...JSON.parse(JSON.stringify(b.s)),team:S.team||"",problem:b.problem}; update(); showTab("finder",true); toast(`Loaded "${b.title}". Adjust the answers to fit your team`); window.scrollTo({top:$("#p-finder").offsetTop-80,behavior:"smooth"});}
+
+/* ---------- CATALOG ---------- */
+const F={q:"",status:null,kind:"all",cell:null};
+const STATUS_ORDER=["strategic","approved","conditional","confirm","pilot","service","legacy","planned"];
+function renderViz(){
+  const cnt=k=>TOOLS.filter(t=>t.status===k).length;
+  $("#statusbar").classList.toggle("filtering",!!F.status);
+  $("#statusbar").innerHTML=STATUS_ORDER.map(k=>`<button type="button" class="${F.status===k?"on":""}" data-status="${k}" style="--c:${STATUS[k].c};flex:${cnt(k)}" title="${STATUS[k].label}: ${cnt(k)}" aria-label="${STATUS[k].label}, ${cnt(k)} tools"><span>${cnt(k)>2?cnt(k):""}</span></button>`).join("");
+  $("#legend").innerHTML=STATUS_ORDER.map(k=>`<button type="button" data-status="${k}" aria-pressed="${F.status===k}"><i class="dot" style="--c:${STATUS[k].c}"></i>${STATUS[k].label} <em>${cnt(k)}</em></button>`).join("");
+  const m=(f,s)=>TOOLS.filter(t=>t.fit===f&&t.skill===s).length, max=Math.max(...[3,2,1,0].flatMap(f=>[1,2,3].map(s=>m(f,s))));
+  $("#matrix").innerHTML=`<span></span>${[1,2,3].map(s=>`<span class="mh">${SKILL[s]}</span>`).join("")}`+[3,2,1,0].map(f=>`<span class="rh">${FIT[f]}</span>`+[1,2,3].map(s=>{const v=m(f,s),k=v?Math.round(12+v/max*80):0,key=f+"-"+s;
+    return `<button type="button" class="cell${k>50?" hot":""}" style="--k:${k}" data-cell="${key}" aria-pressed="${F.cell===key}" aria-label="${FIT[f]}, ${SKILL[s]}: ${v} tools">${v||"·"}</button>`;}).join("")).join("");
+  $("#kindchips").innerHTML=["all","Tool","Platform"].map(k=>`<button class="chip" type="button" data-kind="${k}" aria-pressed="${F.kind===k}">${k==="all"?"All":k+"s"}</button>`).join("");
+}
+function renderCatalog(){
+  renderViz();
+  const q=F.q.trim().toLowerCase();
+  const list=TOOLS.filter(t=>(!F.status||t.status===F.status)&&(F.kind==="all"||t.kind===F.kind)&&(!F.cell||F.cell===t.fit+"-"+t.skill)&&(!q||[t.name,t.cap,t.desc,t.use,CATS[t.cat]].join(" ").toLowerCase().includes(q)));
+  $("#count").textContent=`${list.length} of ${TOOLS.length} shown`;
+  const groups=Object.keys(CATS).map(c=>[c,list.filter(t=>t.cat===c).sort((a,b)=>b.fit-a.fit||a.name.localeCompare(b.name))]).filter(g=>g[1].length);
+  $("#catalog").innerHTML=groups.length?groups.map(([c,ts])=>`<div class="cat"><div class="cat-h"><h3>${CATS[c]}</h3><span>${ts.length}</span></div><div class="tiles">${ts.map(tileHTML).join("")}</div></div>`).join(""):`<div class="none">No tools match. Try a broader word, or clear the filters.</div>`;
+}
+function tileHTML(t){return `<button class="tile" type="button" data-tool="${t.id}"><span class="tile-top"><b>${esc(t.name)}</b><span class="kind">${t.kind}</span></span><span class="cap">${esc(t.cap)}</span><span class="tile-foot"><span class="pill" style="--c:${STATUS[t.status].c}">${STATUS[t.status].label}</span><span class="fit" title="Hackathon fit: ${FIT[t.fit]}">${[1,2,3].map(i=>`<i class="${i<=t.fit?"on":""}"></i>`).join("")}</span></span></button>`;}
+document.addEventListener("click",e=>{const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.status){F.status=F.status===b.dataset.status?null:b.dataset.status; renderCatalog();}
+  else if(b.dataset.cell){F.cell=F.cell===b.dataset.cell?null:b.dataset.cell; renderCatalog();}
+  else if(b.dataset.kind){F.kind=b.dataset.kind; renderCatalog();}
+  else if(b.id==="clearf"){F.q="";F.status=null;F.kind="all";F.cell=null; $("#q").value=""; renderCatalog();}
+});
+$("#q").addEventListener("input",e=>{F.q=e.target.value; renderCatalog();});
+
+/* ---------- COMPARE ---------- */
+const CMP=[
+ {t:"Which AI assistant?",p:"For everyday questions, drafting and research.",o:[
+  ["tevagpt","Questions about internal or regulated Teva knowledge and documents.","Not a builder: you can't wire it into a workflow from here.",true],
+  ["m365-copilot","Help grounded in your own emails, meetings and files (licensed users).","Needs a Premium license; check every teammate has one."],
+  ["copilot-notebook","Synthesizing a defined set of files, emails and chats into one brief.","Not for open-ended questions across all of Teva."],
+  ["copilot-chat","Quick brainstorming and drafting with low-risk content.","Don't use it for confidential financials or personal data."]]},
+ {t:"Which automation tool?",p:"For moving work along without manual chasing.",o:[
+  ["power-automate","Approvals, notifications and data movement between connected apps.","Not ideal when the system has no connector or API.",true],
+  ["power-apps","People need screens to enter, review and approve records.","Overkill if a simple form is enough; use Forms + Lists."],
+  ["forms","Simple, structured intake that can trigger a flow.","Can't show or edit existing records."],
+  ["automation-anywhere","High-volume, rules-based clicks in legacy screens with no API.","Last resort; slower to set up than a flow."]]},
+ {t:"Which dashboard platform?",p:"For reporting, KPIs and visual analysis.",o:[
+  ["power-bi","Any new dashboard, report or semantic model.","Needs a clean data source; prototype in Excel first if unsure.",true],
+  ["copilot-excel","Fast exploration, formulas and charts on a spreadsheet.","Not a governed, shared dashboard."],
+  ["sac","SAP-integrated planning and reporting Power BI can't serve.","Conditional: justify why Power BI doesn't fit."],
+  ["tableau","Maintaining an existing dashboard during migration.","No new builds."]]},
+ {t:"Which way to build an AI assistant or agent?",p:"From low-code to fully custom.",o:[
+  ["ai-foundry","Custom agents you build, evaluate and govern on Azure, with Claude via the AI gateway.","Needs pro-code skills and platform access.",true],
+  ["copilot-studio","Low-code agents over SharePoint knowledge with Power Automate actions.","Not in the approved catalog yet: confirm access first."],
+  ["kore","Reusable enterprise conversational assistants (the AskHR pattern).","Heavier platform; better for scale-up than a prototype."],
+  ["anthropic-cowork","Agentic knowledge work for non-developers, inside the pilot.","Pilot only. Don't plan to scale it."]]},
+ {t:"Which data & ML platform?",p:"For heavy data work and predictive models.",o:[
+  ["databricks","Large-scale data engineering, analytics, ML and agentic AI.","Needs Python/SQL skills and workspace access.",true],
+  ["datasphere","SAP-centric modelling and governed SAP business data.","Not for general-purpose ML."],
+  ["mlflow","Tracking experiments and registering the models you build.","Comes with your Databricks work, not standalone."],
+  ["datarobot","Existing AutoML workloads only.","Legacy: start new models in Databricks."]]},
+ {t:"Which tool to track the hackathon work?",p:"For the team itself, not the solution.",o:[
+  ["planner","A team board with owners and due dates. Right size for a hackathon.","No dependencies or timelines.",true],
+  ["jira-tool","Structured backlogs and workflows when your team already lives in Jira.","Heavier setup than a short build needs."],
+  ["lists","Tracking structured records your solution produces.","Not a task board."],
+  ["todo","Your personal reminders.","Not for shared team work."]]},
+ {t:"Which tool for the final pitch?",p:"For the demo day story.",o:[
+  ["copilot-ppt","A first deck from your notes and documents in minutes.","Review every slide; it drafts, you decide.",true],
+  ["prezent","Teva-branded slides and a tighter storyline.","Start from content you already have."],
+  ["guidde","A narrated, step-by-step walkthrough of your solution.","Record a clean run first."],
+  ["clipchamp","Trimming and captioning a short demo video.","Keep it under two minutes."]]}
+];
+function renderCompare(){
+  $("#cmp").innerHTML=CMP.map(c=>`<section class="cmp"><div class="cmp-h"><h3>${c.t}</h3><p>${c.p}</p></div><div class="cmp-rows">${c.o.map(([id,when,avoid,best])=>{const t=T[id];
+    return `<button class="cmp-o${best?" best":""}" type="button" data-tool="${id}">${best?'<span class="badge">Usual default</span>':""}<b>${esc(t.name)}</b><span class="pill" style="--c:${STATUS[t.status].c};justify-self:start">${STATUS[t.status].label}</span><span class="when"><strong>Pick it for:</strong> ${esc(when)}</span><span class="avoid">${esc(avoid)}</span></button>`;}).join("")}</div></section>`).join("");
+}
+
+/* ---------- DRAWER ---------- */
+let lastFocus=null;
+function openDrawer(id){
+  const t=T[id]; if(!t) return; lastFocus=document.activeElement;
+  const st=STATUS[t.status];
+  $("#dr-head").innerHTML=`<div class="eyebrow">${t.kind} · ${CATS[t.cat]}</div><h2 id="dr-title">${esc(t.name)}</h2><div class="row"><span class="pill" style="--c:${st.c}">${st.label}</span><span class="tag">${SKILL[t.skill]}</span><span class="tag">Hackathon fit: ${FIT[t.fit]}</span></div>`;
+  const pairs=(PAIRS[id]||[]).filter(p=>T[p]);
+  $("#dr-body").innerHTML=`
+    <div><h4>Use it when</h4><div class="callout${["pilot","legacy","planned","confirm"].includes(t.status)?" amber":""}">${esc(t.use)}</div></div>
+    <div><h4>What it is</h4><p>${esc(t.desc)}</p></div>
+    <div><h4>Status</h4><p>${esc(st.hint)}</p></div>
+    <dl class="kv"><dt>Capability</dt><dd>${esc(t.cap)}</dd><dt>Build skill</dt><dd>${SKILL[t.skill]}</dd>${SME_OF[id]?`<dt>Ask for</dt><dd>${esc(SME_OF[id])} SME</dd>`:""}</dl>
+    ${pairs.length?`<div><h4>Pairs well with</h4><div class="pairs">${pairs.map(p=>`<button type="button" data-tool="${p}">${esc(T[p].name)}</button>`).join("")}</div></div>`:""}`;
+  $("#drawer").classList.add("open"); $("#scrim").classList.add("open"); $("#drawer").setAttribute("aria-hidden","false");
+  $("#dr-close").focus();
+}
+function closeDrawer(){ if(!$("#drawer").classList.contains("open")) return; $("#drawer").classList.remove("open"); $("#scrim").classList.remove("open"); $("#drawer").setAttribute("aria-hidden","true"); if(lastFocus&&lastFocus.focus) lastFocus.focus();}
+$("#dr-close").addEventListener("click",closeDrawer); $("#scrim").addEventListener("click",closeDrawer);
+document.addEventListener("keydown",e=>{if(e.key==="Escape") closeDrawer();});
+
+/* ---------- TABS ---------- */
+const TABS=["finder","blueprints","catalog","compare"];
+function showTab(id,push){
+  if(!TABS.includes(id)) id="finder";
+  TABS.forEach(t=>{$("#p-"+t).hidden=t!==id; $("#tab-"+t).setAttribute("aria-selected",t===id);});
+  if(push){try{history.replaceState(null,"","#"+id)}catch(e){} try{localStorage.setItem("tf-tab",id)}catch(e){}}
+}
+
+/* ---------- INIT ---------- */
+$("#stats").innerHTML=[[CATALOG_COUNT,"approved tools & platforms"],[GOALS.length,"build patterns"],[BPS.length,"finance blueprints"],[TOOLS.filter(t=>t.fit===3).length,"core build tools"]].map(([n,l])=>`<div class="stat"><b>${n}</b><span>${l}</span></div>`).join("");
+renderQuestions(); renderResult(); renderBlueprints(); renderCatalog(); renderCompare();
+let start=(location.hash||"").slice(1); if(!TABS.includes(start)){try{start=localStorage.getItem("tf-tab")||"finder"}catch(e){start="finder"}}
+showTab(start,false);
+</script>
