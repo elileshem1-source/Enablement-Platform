@@ -1,0 +1,1209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Digital Workforce CoE Scorecard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700;800&display=swap">
+<style>
+/* Layout: green Teva header band with tabs -> sticky filter rail -> summary first, detail after (tiles, goals, charts, table). */
+:root{
+  --green:#00A03B; --green-ink:#008a33; --lime:#AFCB37; --teal-green:#3C7E79; --teal:#00ACA8; --blue:#00567A; --magenta:#AA198D; --red:#FB3449; --amber:#E39A0B;
+  --bg:#F3F4F1; --surface:#FFFFFF; --surface-2:#F8F9F6; --line:#E1E4DC; --line-strong:#C9CEC2;
+  --fg:#424242; --fg-strong:#262826; --muted:#6E736C; --faint:#9AA096;
+  --band:#00A03B; --band-fg:#FFFFFF; --band-soft:rgba(255,255,255,.16);
+  --track:#E8EBE4; --shadow:0 1px 2px rgba(38,40,38,.06),0 4px 16px rgba(38,40,38,.05);
+  --font:"Teva Sans","Teva Sans Light","Albert Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111412; --surface:#191D1A; --surface-2:#1F2420; --line:#2B312C; --line-strong:#3A423B;
+  --fg:#D9DDD6; --fg-strong:#F2F4F0; --muted:#9BA298; --faint:#6D746A;
+  --band:#0B5E2A; --band-fg:#F2FFF5; --band-soft:rgba(255,255,255,.10);
+  --track:#262C27; --shadow:0 1px 2px rgba(0,0,0,.3); --green-ink:#33C467; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#111412; --surface:#191D1A; --surface-2:#1F2420; --line:#2B312C; --line-strong:#3A423B;
+  --fg:#D9DDD6; --fg-strong:#F2F4F0; --muted:#9BA298; --faint:#6D746A;
+  --band:#0B5E2A; --band-fg:#F2FFF5; --band-soft:rgba(255,255,255,.10);
+  --track:#262C27; --shadow:0 1px 2px rgba(0,0,0,.3); --green-ink:#33C467; color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.wrap{max-width:1360px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{color:var(--fg-strong);text-wrap:balance;margin:0}
+.eyebrow{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* Header band */
+.band{background:var(--band);color:var(--band-fg)}
+.band .wrap{padding-block:18px 0}
+.brandrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.mark{display:flex;align-items:baseline;gap:10px}
+.mark .teva{font-weight:800;font-size:26px;letter-spacing:-.02em;text-transform:lowercase}
+.mark .sep{width:1px;height:22px;background:var(--band-soft);align-self:center}
+.mark .dept{font-weight:500;font-size:16px;opacity:.95}
+.brandrow .spacer{flex:1}
+.mode{display:inline-flex;align-items:center;gap:6px;font-size:12px;background:var(--band-soft);padding:5px 10px;border-radius:99px}
+.mode i{width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block}
+.mode.live i{background:#B7F5C8;box-shadow:0 0 0 3px rgba(183,245,200,.25)}
+.iconbtn{background:var(--band-soft);border:0;color:var(--band-fg);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
+.iconbtn:hover{background:rgba(255,255,255,.26)}
+.headline{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:18px}
+.headline h1{color:var(--band-fg);font-size:clamp(22px,3vw,30px);font-weight:700;letter-spacing:-.01em}
+.headline p{margin:4px 0 0;opacity:.85;max-width:62ch}
+.tabs{display:flex;gap:4px;margin-top:18px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:transparent;color:var(--band-fg);opacity:.8;padding:10px 16px;border-radius:10px 10px 0 0;cursor:pointer;font-weight:600;white-space:nowrap}
+.tab:hover{opacity:1;background:var(--band-soft)}
+.tab[aria-selected="true"]{background:var(--bg);color:var(--fg-strong);opacity:1}
+.tab .ct{font-weight:500;font-size:12px;opacity:.7;margin-left:6px}
+
+/* Filter rail */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.filters{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.filters .wrap{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;padding-block:10px}
+.fgroup{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.flabel{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-right:2px}
+.chip{border:1px solid var(--line-strong);background:var(--surface);border-radius:99px;padding:4px 10px;cursor:pointer;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.chip:hover{border-color:var(--green)}
+.chip[aria-pressed="true"]{background:var(--fg-strong);color:var(--surface);border-color:var(--fg-strong)}
+.chip .dot{width:8px;height:8px;border-radius:50%}
+.av{width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;font-size:10px;font-weight:700;color:#fff;flex:none}
+select.ctl,input.ctl{border:1px solid var(--line-strong);background:var(--surface);border-radius:8px;padding:5px 8px;font-size:13px;min-width:0}
+input.search{width:180px}
+.linkbtn{border:0;background:none;color:var(--green-ink);cursor:pointer;font-weight:600;font-size:12.5px;padding:4px}
+.toggle{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer;user-select:none}
+
+main .wrap{padding-block:20px 48px;display:grid;gap:18px}
+.view[hidden]{display:none!important}
+.view{display:grid;gap:18px}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;min-width:0}
+.card h2{font-size:15px;font-weight:700}
+.card .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+.cardhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.grid{display:grid;gap:18px}
+.g-hero{grid-template-columns:minmax(0,1.05fr) minmax(0,2fr)}
+.g-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g-3-1{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+@media (max-width:980px){.g-hero,.g-2,.g-3-1{grid-template-columns:minmax(0,1fr)}}
+
+.banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:color-mix(in srgb,var(--amber) 12%,var(--surface));border:1px solid color-mix(in srgb,var(--amber) 40%,var(--line));border-radius:var(--r);padding:10px 14px;font-size:13px}
+.banner b{color:var(--fg-strong)}
+.banner .spacer{flex:1}
+
+/* Hero ring */
+.ringcard{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.ring{position:relative;width:148px;height:148px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .c{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.ring .big{font-size:34px;font-weight:800;color:var(--fg-strong);line-height:1}
+.ring .lbl{font-size:11px;color:var(--muted);margin-top:4px}
+.ringside{display:grid;gap:8px;min-width:0;flex:1}
+.ringside .line{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.legend-dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:720px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.tile .v{font-size:28px;font-weight:800;color:var(--fg-strong);line-height:1.1;margin-top:6px}
+.tile .d{font-size:12px;color:var(--muted);margin-top:4px}
+.tile .spark{margin-top:8px;height:28px}
+
+/* Goals */
+.goals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:980px){.goals{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.goals{grid-template-columns:minmax(0,1fr)}}
+.goal{border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;background:var(--surface);display:grid;gap:10px;text-align:left;transition:border-color .15s,transform .15s}
+.goal:hover{border-color:var(--line-strong);transform:translateY(-1px)}
+.goal[aria-pressed="true"]{border-color:var(--fg-strong);box-shadow:0 0 0 1px var(--fg-strong)}
+.goal .top{display:flex;gap:10px;align-items:flex-start}
+.goal .gn{flex:none;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px}
+.goal .name{font-weight:600;color:var(--fg-strong);font-size:13.5px;line-height:1.3}
+.goal .pct{margin-left:auto;font-size:22px;font-weight:800;color:var(--fg-strong)}
+.bar{height:8px;border-radius:99px;background:var(--track);position:relative;overflow:visible}
+.bar>span{position:absolute;left:0;top:0;bottom:0;border-radius:99px}
+.bar .pace{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg-strong);border-radius:2px;opacity:.55}
+.stack{display:flex;height:6px;border-radius:99px;overflow:hidden;background:var(--track)}
+.stack>span{display:block;height:100%}
+.goal .meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);gap:8px}
+.avs{display:flex}
+.avs .av{margin-left:-5px;border:2px solid var(--surface)}
+.avs .av:first-child{margin-left:0}
+
+.chartbox{position:relative;height:260px}
+.chartbox.sm{height:220px}
+.chartbox.tall{height:320px}
+
+/* Heatmap */
+.heat{overflow-x:auto}
+.heat table{border-collapse:separate;border-spacing:4px;width:100%;min-width:560px}
+.heat th{font-size:11.5px;font-weight:600;color:var(--muted);text-align:center;padding:2px 4px}
+.heat th.row{text-align:left;color:var(--fg-strong);font-size:13px;white-space:nowrap}
+.heat td{height:40px;border-radius:7px;text-align:center;font-weight:700;font-size:12.5px;cursor:pointer;transition:transform .12s}
+.heat td:hover{transform:scale(1.04)}
+.heat td.empty{background:transparent;border:1px dashed var(--line);cursor:default;color:var(--faint);font-weight:400}
+
+/* Members */
+.members{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:980px){.members{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.members{grid-template-columns:minmax(0,1fr)}}
+.member{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;background:var(--surface)}
+.member .who{display:flex;align-items:center;gap:10px}
+.member .who .av{width:36px;height:36px;font-size:13px}
+.member .who b{color:var(--fg-strong);font-size:14px}
+.member .who small{display:block;color:var(--muted);font-size:12px}
+.member .split{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:12px;color:var(--muted)}
+
+/* Feed */
+.feed{display:grid;gap:2px;max-height:340px;overflow:auto}
+.feed .it{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line);font-size:12.5px}
+.feed .it:last-child{border-bottom:0}
+.feed .it .k{color:var(--fg-strong);font-weight:600}
+.feed .it .t{color:var(--faint);font-size:11.5px;white-space:nowrap}
+
+/* Pills */
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.s-achieved{color:var(--blue);background:color-mix(in srgb,var(--blue) 13%,transparent)}
+.s-on{color:var(--green-ink);background:color-mix(in srgb,var(--green) 14%,transparent)}
+.s-risk{color:#a86d00;background:color-mix(in srgb,var(--amber) 18%,transparent)}
+.s-off{color:#d81f34;background:color-mix(in srgb,var(--red) 14%,transparent)}
+.s-none{color:var(--muted);background:var(--track)}
+:root[data-theme="dark"] .s-risk{color:#F3BA4A}
+:root[data-theme="dark"] .s-off{color:#FF7484}
+:root[data-theme="dark"] .s-achieved{color:#4FB4DE}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .s-risk{color:#F3BA4A}:root:not([data-theme="light"]) .s-off{color:#FF7484}:root:not([data-theme="light"]) .s-achieved{color:#4FB4DE}}
+.gchip{display:inline-grid;place-items:center;min-width:22px;height:20px;padding:0 5px;border-radius:5px;font-size:11px;font-weight:800;color:#fff}
+.tchip{font-size:11px;font-weight:700;padding:2px 7px;border-radius:5px;border:1px solid currentColor}
+.t-int{color:var(--blue)} .t-ext{color:var(--green-ink)}
+:root[data-theme="dark"] .t-int{color:#4FB4DE}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .t-int{color:#4FB4DE}}
+.sample{font-size:10.5px;font-weight:700;color:#a86d00;background:color-mix(in srgb,var(--amber) 16%,transparent);padding:1px 6px;border-radius:4px;letter-spacing:.03em}
+
+/* Table */
+.tablewrap{overflow-x:auto;margin:0 -18px -18px;border-top:1px solid var(--line)}
+table.kpis{width:100%;border-collapse:collapse;min-width:900px}
+table.kpis th{position:sticky;top:0;background:var(--surface-2);text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;user-select:none}
+table.kpis th[data-sort]:hover{color:var(--fg-strong)}
+table.kpis th .arr{opacity:.6;margin-left:4px}
+table.kpis td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.kpis tbody tr{cursor:pointer}
+table.kpis tbody tr:hover{background:var(--surface-2)}
+.kname{font-weight:600;color:var(--fg-strong);max-width:320px}
+.kname small{display:block;font-weight:400;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+.progcell{min-width:150px}
+.progcell .bar{margin-top:5px}
+.vals{white-space:nowrap}
+.vals b{color:var(--fg-strong)}
+.vals span{color:var(--muted);font-size:12px}
+.empty-state{padding:36px 18px;text-align:center;color:var(--muted)}
+.empty-state b{display:block;color:var(--fg-strong);font-size:15px;margin-bottom:4px}
+
+.segmented{display:inline-flex;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden}
+.segmented button{border:0;background:var(--surface);padding:5px 10px;font-size:12.5px;cursor:pointer}
+.segmented button[aria-pressed="true"]{background:var(--fg-strong);color:var(--surface)}
+
+/* KPI cards grid view */
+.kcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.kcard{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:8px;cursor:pointer;background:var(--surface);text-align:left}
+.kcard:hover{border-color:var(--line-strong)}
+.kcard .h{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.kcard .n{font-weight:600;color:var(--fg-strong);line-height:1.3}
+.kcard .big{font-size:24px;font-weight:800;color:var(--fg-strong)}
+.kcard .big small{font-size:12px;font-weight:500;color:var(--muted);margin-left:4px}
+.kcard .f{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+
+/* Update view */
+.whopick{display:flex;gap:10px;flex-wrap:wrap}
+.whobtn{display:flex;align-items:center;gap:10px;border:1px solid var(--line-strong);background:var(--surface);border-radius:12px;padding:8px 14px 8px 8px;cursor:pointer}
+.whobtn .av{width:32px;height:32px;font-size:12px}
+.whobtn b{display:block;color:var(--fg-strong);font-size:13.5px;text-align:left}
+.whobtn small{color:var(--muted);font-size:11.5px}
+.whobtn[aria-pressed="true"]{border-color:var(--green);box-shadow:0 0 0 2px color-mix(in srgb,var(--green) 35%,transparent)}
+.editlist{display:grid;gap:12px}
+.edit{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.edit.dirty{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.edit.flash{animation:flash 1.2s ease}
+@keyframes flash{0%{box-shadow:0 0 0 4px color-mix(in srgb,var(--green) 45%,transparent)}100%{box-shadow:none}}
+.edit summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 16px}
+.edit summary::-webkit-details-marker{display:none}
+.edit .st{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.edit .body{padding:0 16px 16px;display:grid;gap:14px;border-top:1px solid var(--line);padding-top:14px}
+.qrow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+@media (max-width:720px){.qrow{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.field{display:grid;gap:4px;min-width:0}
+.field label,.field .lab{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.field input,.field select,.field textarea{border:1px solid var(--line-strong);background:var(--surface-2);border-radius:8px;padding:7px 9px;width:100%;min-width:0}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green);outline:none;background:var(--surface)}
+.field textarea{resize:vertical;min-height:56px}
+.frow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:720px){.frow{grid-template-columns:minmax(0,1fr)}}
+.goalpick{display:flex;gap:6px;flex-wrap:wrap}
+.goalpick label{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line-strong);border-radius:7px;padding:4px 8px;font-size:12px;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:500;color:var(--fg)}
+.goalpick input{margin:0;accent-color:var(--green)}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.actions .spacer{flex:1}
+.btn{border:1px solid var(--line-strong);background:var(--surface);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:600;font-size:13px}
+.btn:hover{border-color:var(--fg)}
+.btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+.btn.primary:hover{background:#008a33}
+.btn.primary:disabled{opacity:.45;cursor:default}
+.btn.danger{color:#d81f34;border-color:color-mix(in srgb,var(--red) 50%,var(--line))}
+.btn.ghost{border-color:transparent;background:transparent}
+.hint{font-size:12px;color:var(--muted)}
+.preview{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+
+/* Drawer */
+.scrim{position:fixed;inset:0;background:rgba(17,20,18,.45);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,100%);background:var(--surface);z-index:41;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column;border-left:1px solid var(--line);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+.drawer.open{transform:none}
+.drawer header{padding:18px 20px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.drawer header .x{position:absolute;right:max(14px,env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px))}
+.drawer .content{padding:18px 20px;overflow:auto;display:grid;gap:16px}
+.dl{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px 14px;font-size:13px}
+.dl dt{color:var(--muted);font-size:12px}
+.dl dd{margin:0;color:var(--fg)}
+.kstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+
+/* Modal */
+.modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px}
+.modal[hidden]{display:none!important}
+.modal .panel{background:var(--surface);border-radius:14px;border:1px solid var(--line);width:min(620px,100%);max-height:90vh;overflow:auto;padding:20px;display:grid;gap:14px;position:relative;z-index:1}
+.modal .bg{position:absolute;inset:0;background:rgba(17,20,18,.5)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--fg-strong);color:var(--surface);padding:10px 16px;border-radius:10px;font-weight:600;font-size:13px;opacity:0;transition:all .2s;z-index:60;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.loading{padding:60px 0;text-align:center;color:var(--muted)}
+footer{color:var(--faint);font-size:12px;text-align:center;padding-block:0 30px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:560px){input.search{width:100%}.fgroup.searchg{width:100%}}
+@media (max-width:720px){.filters{position:static}}
+</style>
+</head>
+<body>
+
+<div class="band">
+  <div class="wrap">
+    <div class="brandrow">
+      <div class="mark"><span class="teva">teva</span><span class="sep"></span><span class="dept">Digital Workforce CoE</span></div>
+      <div class="spacer"></div>
+      <span class="mode" id="modeBadge"><i></i><span>Connecting…</span></span>
+      <button class="iconbtn" id="openSettings" type="button" aria-label="Settings and data">⚙ Settings</button>
+    </div>
+    <div class="headline">
+      <div>
+        <h1 id="pageTitle">2026 Goal Scorecard</h1>
+        <p id="pageSub">How the team is tracking against the six Digital Workforce goals, KPI by KPI.</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button class="tab" role="tab" data-view="overview" id="tab-overview">Team overview</button>
+      <button class="tab" role="tab" data-view="internal" id="tab-internal">Internal KPIs<span class="ct" id="ct-int"></span></button>
+      <button class="tab" role="tab" data-view="external" id="tab-external">External KPIs<span class="ct" id="ct-ext"></span></button>
+      <button class="tab" role="tab" data-view="update" id="tab-update">Update my KPIs</button>
+    </nav>
+  </div>
+</div>
+
+<div class="filters" id="filterBar">
+  <div class="wrap">
+    <div class="fgroup"><span class="flabel">Team</span><span id="fMembers" class="fgroup"></span></div>
+    <div class="fgroup"><span class="flabel">Goal</span><span id="fGoals" class="fgroup"></span></div>
+    <div class="fgroup"><span class="flabel">Status</span>
+      <select class="ctl" id="fStatus" aria-label="Status filter">
+        <option value="">All</option><option value="achieved">Achieved</option><option value="on">On track</option><option value="risk">At risk</option><option value="off">Off track</option><option value="none">Not reported</option>
+      </select>
+    </div>
+    <div class="fgroup"><span class="flabel">As of</span>
+      <select class="ctl" id="fQuarter" aria-label="As-of quarter"><option value="1">Q1 2026</option><option value="2">Q2 2026</option><option value="3">Q3 2026</option><option value="4">Q4 2026</option></select>
+    </div>
+    <div class="fgroup searchg"><input class="ctl search" id="fSearch" type="search" placeholder="Search KPIs, sources…" aria-label="Search KPIs"></div>
+    <label class="toggle"><input type="checkbox" id="fHideSample"> Hide sample values</label>
+    <button class="linkbtn" id="fClear" type="button">Clear filters</button>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <div id="sampleBanner" class="banner" hidden></div>
+    <div id="loading" class="loading">Loading team KPIs…</div>
+
+    <!-- OVERVIEW -->
+    <section class="view" id="view-overview" hidden>
+      <div class="grid g-hero">
+        <div class="card">
+          <div class="cardhead"><div><h2>Overall goal attainment</h2><div class="sub" id="ovAsOf"></div></div></div>
+          <div class="ringcard">
+            <div class="ring" id="ovRing"></div>
+            <div class="ringside" id="ovRingSide"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cardhead"><div><h2>At a glance</h2><div class="sub">Filters apply to every number on this page</div></div></div>
+          <div class="tiles" id="ovTiles"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardhead"><div><h2>The six 2026 goals</h2><div class="sub">Average progress to target across aligned KPIs. The tick marks where we should be by now. Click a goal to filter.</div></div></div>
+        <div class="goals" id="ovGoals"></div>
+      </div>
+
+      <div class="grid g-2">
+        <div class="card">
+          <div class="cardhead"><div><h2>Progress trend</h2><div class="sub">Average progress to target at each quarter end, internal vs external</div></div></div>
+          <div class="chartbox"><canvas id="chTrend" aria-label="Progress trend chart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="cardhead"><div><h2>KPI health mix</h2><div class="sub">Status of every KPI in view, by type</div></div></div>
+          <div class="chartbox"><canvas id="chMix" aria-label="KPI status by type chart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardhead"><div><h2>Who drives which goal</h2><div class="sub">Average progress per team member and goal. Click a cell to drill in.</div></div></div>
+        <div class="heat" id="ovHeat"></div>
+      </div>
+
+      <div class="grid g-3-1">
+        <div class="card">
+          <div class="cardhead"><div><h2>Team</h2><div class="sub">Each member's KPI portfolio</div></div></div>
+          <div class="members" id="ovMembers"></div>
+        </div>
+        <div class="card">
+          <div class="cardhead"><div><h2>Latest updates</h2><div class="sub">Most recent KPI changes</div></div></div>
+          <div class="feed" id="ovFeed"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERNAL / EXTERNAL share one template -->
+    <section class="view" id="view-type" hidden>
+      <div class="tiles" id="tyTiles"></div>
+      <div class="grid g-2">
+        <div class="card">
+          <div class="cardhead"><div><h2>Progress by goal</h2><div class="sub" id="tyGoalSub"></div></div></div>
+          <div class="chartbox"><canvas id="chTyGoal" aria-label="Progress by goal"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="cardhead"><div><h2>Status by team member</h2><div class="sub">Number of KPIs in each status</div></div></div>
+          <div class="chartbox"><canvas id="chTyMember" aria-label="Status by team member"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cardhead">
+          <div><h2 id="tyListTitle">KPIs</h2><div class="sub" id="tyListSub"></div></div>
+          <div class="actions">
+            <div class="segmented" role="group" aria-label="Layout">
+              <button type="button" data-layout="table" id="lyTable">Table</button>
+              <button type="button" data-layout="cards" id="lyCards">Cards</button>
+            </div>
+            <button class="btn" type="button" id="tyExport">Export CSV</button>
+          </div>
+        </div>
+        <div id="tyList"></div>
+      </div>
+    </section>
+
+    <!-- UPDATE -->
+    <section class="view" id="view-update" hidden>
+      <div class="card">
+        <div class="cardhead"><div><h2>Who are you?</h2><div class="sub">Pick your name to see and update your KPIs. Saved values show up on both dashboards immediately.</div></div></div>
+        <div class="whopick" id="whoPick"></div>
+      </div>
+      <div id="editArea"></div>
+    </section>
+  </div>
+</main>
+<footer><div class="wrap">Digital Workforce CoE · 2026 KPI scorecard · Progress = (latest − baseline) ÷ (target − baseline); pace compares that with the share of the year elapsed at the latest reading.</div></footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="KPI detail"></aside>
+
+<div class="modal" id="settings" hidden>
+  <div class="bg" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <div class="cardhead" style="margin:0"><h2 id="setTitle">Settings &amp; data</h2><button class="btn ghost" type="button" data-close>Close</button></div>
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px">Goal names</div>
+      <div id="goalEdit" style="display:grid;gap:8px"></div>
+      <div class="actions" style="margin-top:10px"><button class="btn primary" type="button" id="saveGoals">Save goal names</button></div>
+    </div>
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px">Data</div>
+      <p class="hint" id="dataModeHint" style="margin:0 0 10px"></p>
+      <div class="actions">
+        <button class="btn" type="button" id="exportCsv">Export CSV</button>
+        <button class="btn" type="button" id="exportJson">Export JSON backup</button>
+        <label class="btn" for="importJson" id="importLabel">Import JSON backup</label>
+        <input type="file" id="importJson" accept="application/json,.json" hidden>
+      </div>
+      <div class="actions" style="margin-top:10px">
+        <button class="btn danger" type="button" id="clearSample">Clear all sample values</button>
+        <button class="btn danger" type="button" id="resetCatalog">Restore 2026 KPI catalog</button>
+      </div>
+      <p class="hint" id="confirmLine" style="margin:8px 0 0"></p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* ================= Reference data ================= */
+const MEMBERS = [
+  {id:"nico",   name:"Nico",   full:"Nico Fehrenbach", color:"#00567A"},
+  {id:"anil",   name:"Anil",   full:"Anil",            color:"#3C7E79"},
+  {id:"anat",   name:"Anat",   full:"Anat",            color:"#AA198D"},
+  {id:"eli",    name:"Eli",    full:"Eli Leshem",      color:"#00A03B"},
+  {id:"tamar",  name:"Tamar",  full:"Tamar Schnitzer", color:"#00ACA8"},
+  {id:"duncan", name:"Duncan", full:"Duncan Welling",  color:"#7E9A1F"}
+];
+const DEFAULT_GOALS = [
+  {n:1, name:"Deliver enterprise assets, POCs & briefs",     color:"#00A03B"},
+  {n:2, name:"Build AI literacy & workforce skills",          color:"#8FAE1B"},
+  {n:3, name:"Deploy tools, standards, prompts & templates",  color:"#3C7E79"},
+  {n:4, name:"Improve adoption & reuse of digital assets",    color:"#00ACA8"},
+  {n:5, name:"Set up the CoE for strategy & operations",      color:"#00567A"},
+  {n:6, name:"Shape the standard",                            color:"#AA198D"}
+];
+const UNITS = {"%":"Percent","#":"Count","hrs":"Hours","$K":"$ thousands","score":"Score (1–5)","pts":"Points"};
+const STATUS = {
+  achieved:{label:"Achieved",   cls:"s-achieved", color:"#00567A"},
+  on:      {label:"On track",   cls:"s-on",       color:"#00A03B"},
+  risk:    {label:"At risk",    cls:"s-risk",     color:"#E39A0B"},
+  off:     {label:"Off track",  cls:"s-off",      color:"#FB3449"},
+  none:    {label:"Not reported",cls:"s-none",    color:"#9AA096"}
+};
+const STATUS_ORDER = ["achieved","on","risk","off","none"];
+
+/* KPI catalog as supplied by the team. Row: [type, name, measures, why, source, listedOwner, goals, unit, baseline, target]
+   Baselines and targets are proposals for owners to confirm in "Update my KPIs". */
+const CATALOG = {
+ nico:[
+  ["I","Enablement delivery throughput","Training cohorts, webinars and community sessions delivered vs. planned per quarter","Shows whether we convert capacity into enablement reliably; protects against over-commitment","SharePoint (capacity plan) / Excel / Teams","Nico Fehrenbach",[5],"%",70,95],
+  ["I","Progression along the maturity curve","% of users moving Novice → Habitual → Power within a defined period","The real adoption signal. Depth of use, not first touch, is what generates value","Viva Insights + M365 Admin Center → Power BI","Orr Enden",[4],"%",10,30],
+  ["I","Reusable asset publication & reuse rate","Number of reusable assets published (templates, prompts, agents, flows) and how often each is reused","Reuse is how we scale without adding headcount and avoid duplicate builds","SharePoint asset catalog / Power Platform CoE Kit","Anat / Ash (TBC)",[3],"#",0,60],
+  ["E","Power User share per business unit","% of licensed users at Power User level per BU / function","Makes depth of adoption comparable across BUs and shows where enablement still has to land","M365 Admin Center + Viva Insights → Power BI","Orr Enden",[4],"%",5,20],
+  ["E","Value realized (hours released / cost avoided)","Documented before/after impact per validated use case","Translates adoption into business value that survives a Finance review","Power BI value ledger / SharePoint submissions","Nico Fehrenbach",[1],"hrs",0,25000],
+  ["E","Business-validated success stories","Number of quantified, presentation-ready wins per function per quarter","Evidence for scaling decisions and the strongest driver of further adoption","SharePoint / Power BI","Orr Enden",[1],"#",0,24],
+  ["E","Maker-built solutions in productive use","Apps, flows and agents built by business makers that are actively used and governed","Shows democratization is producing real, supportable business outcomes","Power Platform Admin Center / Copilot Studio inventory","Itzhak Daskal",[4,3],"#",40,150]
+ ],
+ anat:[
+  ["I","Governance","Security, legal, privacy, SDLC, ALM adherence; % governed processes","Ensures compliant, secure, and scalable adoption of digital tools","M365 Admin Center, Power Platform Admin Center, Agent Kit, CoE Kit, Viva Insights, Copilot Analytics, Purview","Anat",[3],"%",60,95],
+  ["I","Operational Automation","# automated processes / time saved","Improves productivity, efficiency, and operational scale","Agent Kit, CoE Kit","Anat",[3],"#",0,40],
+  ["I","Incubation","# POC'd / reviewed tools and platforms","Drives innovation and informs platform strategy decisions","Innovation backlog, POC tracker, CoE repository","Anat",[6],"#",0,20],
+  ["E","PP Democratization","# democratized platforms and tools","Expands business enablement and self-service capabilities","Power Platform Admin Center, CoE Kit, Copilot Analytics","Anat",[4],"#",0,8],
+  ["E","New Capabilities","# new platforms, features, OOTB agents approved","Accelerates value realization from emerging technologies","Feature approval tracker, roadmap backlog, MS message center","Anat",[6],"#",0,30],
+  ["E","Reusable Components","# POCs, # reusable components, # users","Increases reuse, consistency, and speed of solution delivery","Reusable assets repository, CoE Kit, usage analytics","Anat",[1],"#",0,50]
+ ],
+ anil:[
+  ["E","Secure External Collaboration","# of active users for external sharing; # files in collaboration","Enable external sharing in Teva for better collaboration with external partners, vendors and customers","Exostar (SAM) Admin center","Anil",[3],"#",0,3000],
+  ["I","Agent Reliability and Compliance","Agent toolkit coverage: agent performance, response quality, compliance adherence and tenant-wide usage telemetry","Improves productivity, efficiency, and operational scale","Copilot Agent toolkit, PP Admin center","Anil",[3],"%",60,95],
+  ["E","New Capability Value Realization","# new platforms (Agent 365): agent performance, adoption, activity, health and business impact","Accelerates value realization from emerging technologies","Feature approval tracker, roadmap backlog, MS message center","Anil",[6],"#",0,5],
+  ["I","Deployment Automation and Quality","# CI/CD processes: deployment frequency, faster code commit, test pass/fail rate","Removes manual work and reduces risk in production","Built-in platform dashboards","Anil",[3],"#",0,12],
+  ["I","SharePoint Governance and Lifecycle","# active sites under governance: storage reclaims, templates used, automated site creation","Enables a modern collaboration platform with enhanced capability","Built-in platform dashboards","Anil",[5],"#",0,1500],
+  ["I","Purview Operational Readiness","% of approved eDiscovery and RIM requirements configured, tested, accepted by stakeholders, and ready for production","Shows whether Purview capabilities are operationally usable, compliant, and aligned with Legal and Records Management needs","Microsoft Purview portal, project requirements register, UAT evidence","Anil",[3,5],"%",0,100]
+ ],
+ duncan:[
+  ["I","AI Literacy Coverage %","% of target employees enrolled in AI literacy pathways","Ensures broad organizational reach","Viva Learning, HR BI","Duncan Welling",[2],"%",0,80],
+  ["I","AI Learning Completion Rate","% of users completing assigned learning journeys","Measures learning program effectiveness","Viva Learning","Duncan Welling",[2],"%",0,70],
+  ["I","AI Certification Achievement Rate","% of employees obtaining AI certifications","Demonstrates measurable skill uplift","Viva Learning, Certification Platforms","Duncan Welling",[2,6],"%",0,25],
+  ["I","AI Skills Assessment Score","Average improvement between pre- and post-training assessments","Measures actual competency growth, not attendance","Viva Learning, Forms","Duncan Welling",[2],"pts",0,20],
+  ["I","Manager Enablement Participation","% of leaders completing AI leadership programs","Leadership adoption drives enterprise-scale change","Viva Learning, HR BI","Duncan Welling",[2],"%",0,60],
+  ["I","AI Community Engagement Rate","Active participation in AI communities, events and office hours","Indicates ongoing engagement beyond training","Teams, Viva Engage","Duncan Welling",[4],"%",0,25],
+  ["I","Reusable Learning Asset Utilization","Number of times learning kits, playbooks and tutorials are reused","Encourages scaling rather than rebuilding","SharePoint, Viva Learning","Duncan Welling",[4],"#",0,500],
+  ["I","AI Awareness Campaign Reach","Employees reached through literacy campaigns","Measures communication effectiveness","Viva Engage, M365 Analytics","Duncan Welling",[2],"#",0,20000],
+  ["I","Learning Content Refresh Rate","% of AI training materials updated within target cycle","Ensures content stays relevant","SharePoint, Learning Repository","Duncan Welling",[3],"%",0,90],
+  ["I","Literacy Dashboard Availability","Availability and adoption of literacy reporting dashboards","Creates visibility and operational governance","Power BI","Duncan Welling",[5],"%",0,100],
+  ["E","AI Adoption After Training","% of trained users actively using Copilot/approved AI tools","Connects learning to behavior change","Microsoft 365 Admin Center, Viva Insights","Duncan Welling",[4],"%",0,70],
+  ["E","AI Usage Growth in Trained Population","Increase in AI tool usage among trained employees","Demonstrates literacy impact on adoption","M365 Analytics, Graph API","Duncan Welling",[4],"%",0,40],
+  ["E","Productivity Improvement from AI Training","Reported hours saved by trained users","Links learning investment to business value","Viva Insights, Employee Surveys","Duncan Welling",[1],"hrs",0,30000],
+  ["E","Business Use Cases Generated","Number of new AI use cases identified after literacy activities","Shows innovation pipeline growth","Innovation Intake Platform, SharePoint","Duncan Welling",[1],"#",0,120],
+  ["E","AI Prompt & Asset Adoption Rate","Usage of standardized prompts and assets taught during training","Measures practical application of learning","Copilot Analytics, SharePoint","Duncan Welling",[3,4],"%",0,50],
+  ["E","Responsible AI Compliance Rate","% of trained users following approved AI policies","Ensures safe and compliant AI use","Purview, Compliance Reports","Duncan Welling",[3],"%",80,98],
+  ["E","Teams Adopting New AI Practices","Number of teams implementing AI-enabled ways of working","Directly aligns to the Goal 6 success measure","Business Unit Reporting, Viva Insights","Duncan Welling",[6],"#",0,60],
+  ["E","AI Champion Network Growth","Growth of certified AI champions across functions","Creates a scalable enablement model","Viva Engage, HR BI","Duncan Welling",[4,6],"#",0,150],
+  ["E","Employee AI Confidence Score","Employee self-assessed confidence using AI","Measures workforce readiness","Surveys, Viva Pulse","Duncan Welling",[2],"score",2.5,4],
+  ["E","Value Realization from Literacy Programs","Estimated business impact resulting from trained populations","Demonstrates ROI of literacy investments","Power BI KPI Dashboard, Viva Insights","Duncan Welling",[1,5],"$K",0,2000]
+ ],
+ tamar:[
+  ["E","Product Adoption Rate","% of target users actively using a delivered digital product","Measures whether solutions create real business value and adoption","Power BI, M365 Usage Analytics, Product Analytics","Tamar Schnitzer",[1,4],"%",0,70],
+  ["E","Business Value Realized","Total hours saved, effort reduced, or cost avoided from product deployments","Demonstrates measurable business impact and ROI","Power BI, Business Value Tracking Dashboard","Tamar Schnitzer",[1,6],"hrs",0,40000],
+  ["I","Product Reuse Rate","% of product components, capabilities, or assets reused by additional teams","Encourages scale, avoids duplicate development, increases value realization","Power Platform CoE, Asset Repository, SharePoint","Tamar Schnitzer",[3,4],"%",0,40],
+  ["E","Enterprise Reach","Number of business units, functions, or markets using delivered solutions","Measures scalability and enterprise-wide impact","Power BI, Product Analytics","Tamar Schnitzer",[4,6],"#",0,15],
+  ["I","Product Delivery Success Rate","% of roadmap commitments delivered on time and within scope","Reflects execution effectiveness and operational maturity","Azure DevOps, Jira, Planner","Tamar Schnitzer",[1,5],"%",60,90],
+  ["E","Stakeholder Satisfaction Score","Average satisfaction score from business sponsors and end users","Validates that products solve real business problems","Microsoft Forms, Qualtrics, Surveys","Tamar Schnitzer",[1,6],"score",3.5,4.5],
+  ["I","Governance Compliance Rate","% of products complying with approved standards, architecture, and security requirements","Ensures scalable, compliant, enterprise-ready solutions","Purview, Power Platform CoE Toolkit","Tamar Schnitzer",[3,5],"%",70,100],
+  ["E","Digital Capability Enablement","Number of teams enabled through new product capabilities or AI solutions","Measures contribution to workforce transformation and AI enablement","Power BI, Adoption Dashboard","Tamar Schnitzer",[2,4],"#",0,80],
+  ["I","POC-to-Production Conversion Rate","% of pilots successfully promoted into production solutions","Ensures investments generate tangible outcomes and not just experiments","Project Portfolio Dashboard, Azure DevOps","Tamar Schnitzer",[1,5],"%",20,50],
+  ["E","AI Product Innovation Index","Number of new AI-enabled capabilities launched and adopted","Measures product innovation and contribution to Digital Workforce strategy","Product Portfolio Dashboard, Power BI","Tamar Schnitzer",[2,6],"#",0,12]
+ ],
+ eli:[
+  ["I","AI Use Cases Identified","Number of qualified AI opportunities identified across business units","Builds future value pipeline","Front Door, SharePoint, Intake Process","Eli Leshem",[1],"#",0,150],
+  ["I","Reusable AI Assets Created","Number of prompts, agents, copilots, playbooks and templates delivered","Supports scale and reuse across Teva","SharePoint, Copilot Studio","Eli Leshem",[1,4],"#",0,80],
+  ["I","AI Opportunity Assessment Completion Rate","% of requested opportunities assessed using standard framework","Creates operational discipline","Power BI, Intake Tracker","Eli Leshem",[5],"%",50,95],
+  ["I","KPI Dashboard Coverage","% of Digital Workforce KPIs digitized and tracked","Provides leadership visibility","Power BI","Eli Leshem",[5],"%",0,100],
+  ["I","AI Workforce Strategic Initiatives Delivered","Number of strategic initiatives completed (Agent Factory, Workforce Roadmap, etc.)","Tracks execution of transformation agenda","Project Portfolio","Eli Leshem",[1],"#",0,6],
+  ["I","Responsible AI Enablement Sessions","Number of governance and enablement engagements completed","Promotes safe AI adoption","Teams, SharePoint","Eli Leshem",[3],"#",0,40],
+  ["I","AI Literacy Engagement Support","Participation in literacy programs and executive briefings","Ensures workforce readiness","Viva Learning, Teams","Eli Leshem",[2],"#",0,30],
+  ["I","Internal Stakeholder Satisfaction","Satisfaction score from business stakeholders","Measures effectiveness of support model","Surveys, Forms","Eli Leshem",[6],"score",3.5,4.5],
+  ["I","KPI Reporting Timeliness","% of KPI reports delivered on schedule","Ensures operational excellence","Power BI","Eli Leshem",[5],"%",70,100],
+  ["I","Strategic Recommendations Implemented","% of approved recommendations moved into execution","Demonstrates influence on business decisions","Project Portfolio","Eli Leshem",[6],"%",0,70],
+  ["E","Business Value Identified from AI Initiatives","Estimated annual value from approved AI opportunities","Connects strategy to tangible outcomes","Business Cases, Power BI","Eli Leshem",[1],"$K",0,10000],
+  ["E","AI Adoption Growth in Targeted Functions","Increase in active usage after enablement activities","Demonstrates transformation impact","M365 Admin Center, Graph API","Eli Leshem",[4],"%",0,35],
+  ["E","Hours Saved Through AI Solutions","Estimated productivity gains from scaled AI assets","Measures workforce efficiency improvement","Viva Insights, Surveys","Eli Leshem",[1],"hrs",0,50000],
+  ["E","AI Asset Reuse Rate","Number of functions reusing existing assets","Indicates successful scaling model","SharePoint Analytics","Eli Leshem",[4],"#",0,12],
+  ["E","Cross-Functional AI Use Cases Scaled","AI solutions adopted by multiple business units","Demonstrates enterprise impact","Power Platform, Copilot Studio","Eli Leshem",[4],"#",0,15],
+  ["E","Teams Adopting New AI Ways of Working","Number of teams implementing new AI-enabled practices","Directly supports the Goal 6 success measure","Business Reporting","Eli Leshem",[6],"#",0,50],
+  ["E","AI Workforce Maturity Improvement","Maturity score improvement across targeted groups","Measures transformation progress","Assessment Framework","Eli Leshem",[2,6],"pts",0,15],
+  ["E","Value Realization of POCs","% of POCs promoted into production and delivering value","Ensures focus on outcomes, not experiments","Project Portfolio","Eli Leshem",[1],"%",0,50],
+  ["E","Agent Adoption Rate","Active usage of agents and copilots introduced through CoE initiatives","Measures success of Agentic Workforce strategy","Copilot Studio Analytics","Eli Leshem",[4],"%",0,40],
+  ["E","Executive AI Readiness Score","Leadership confidence and readiness to sponsor AI transformation","Supports long-term transformation success","Executive Surveys","Eli Leshem",[6],"score",2.5,4]
+ ]
+};
+
+/* Builds the catalog with illustrative Q1–Q3 values (flagged sample:true) so the dashboards have shape until owners report actuals. */
+function buildCatalog(){
+  let seed = 20260101;
+  const rnd = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
+  const out = [];
+  for (const m of MEMBERS){
+    (CATALOG[m.id]||[]).forEach((r,i)=>{
+      const [type,name,measures,why,source,owner,goals,unit,baseline,target] = r;
+      const health = 0.5 + rnd()*0.95;
+      const q = {};
+      for (let k=1;k<=3;k++){
+        const frac = Math.min(1.1, health*(k/4)*(0.94+rnd()*0.12));
+        q["q"+k] = roundU(baseline + (target-baseline)*frac, unit);
+      }
+      q.q4 = null;
+      out.push({id:`${m.id}-${String(i+1).padStart(2,"0")}`, member:m.id, type:type==="I"?"internal":"external", name, measures, why, source, owner,
+        goals, unit, baseline, target, q, comment:"", sample:true, updatedAt:Date.UTC(2026,9,1+Math.floor(rnd()*20),8+Math.floor(rnd()*9))});
+    });
+  }
+  return out;
+}
+function roundU(v,u){ if(u==="score") return Math.round(v*10)/10; if(u==="%"||u==="pts") return Math.round(v*10)/10; return Math.round(v); }
+
+/* ================= Formatting ================= */
+const nf = new Intl.NumberFormat("en-US",{maximumFractionDigits:1});
+function compact(v){ const a=Math.abs(v); if(a>=1e6) return nf.format(v/1e6)+"M"; if(a>=1e4) return nf.format(v/1e3)+"K"; return nf.format(v); }
+function fmt(v,u){
+  if(v===null||v===undefined||v==="") return "—";
+  switch(u){
+    case "%": return nf.format(v)+"%";
+    case "hrs": return compact(v)+" hrs";
+    case "$K": return v>=1000 ? "$"+nf.format(v/1000)+"M" : "$"+nf.format(v)+"K";
+    case "score": return (+v).toFixed(1);
+    case "pts": return "+"+nf.format(v)+" pts";
+    default: return compact(v);
+  }
+}
+const pct = p => p===null||p===undefined ? "—" : Math.round(p*100)+"%";
+function esc(s){ return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function ago(t){ if(!t) return ""; const d=(Date.now()-t)/1000; if(d<60) return "just now"; if(d<3600) return Math.floor(d/60)+"m ago"; if(d<86400) return Math.floor(d/3600)+"h ago"; if(d<86400*30) return Math.floor(d/86400)+"d ago"; return new Date(t).toLocaleDateString("en-GB",{day:"numeric",month:"short"}); }
+const memberById = id => MEMBERS.find(m=>m.id===id) || {id, name:id, full:id, color:"#6E736C"};
+const avatar = (m,size) => `<span class="av" style="background:${m.color}${size?`;width:${size}px;height:${size}px`:""}" title="${esc(m.full)}">${esc(m.name.slice(0,2).toUpperCase())}</span>`;
+
+/* ================= Metrics ================= */
+function latest(k, asOf){
+  for (let q=asOf;q>=1;q--){ const v=k.q?.["q"+q]; if(v!==null && v!==undefined && v!=="" && !isNaN(v)) return {q, v:+v}; }
+  return null;
+}
+function evalKpi(k, asOf){
+  const L = latest(k, asOf);
+  if(!L) return {status:"none", progress:null, pace:null, latest:null};
+  const b=+k.baseline||0, t=+k.target;
+  let p;
+  if(isNaN(t)) p=null;
+  else if(t===b) p = L.v>=t?1:0;
+  else p = (L.v-b)/(t-b);
+  if(p===null) return {status:"none", progress:null, pace:null, latest:L};
+  p = Math.max(0, p);
+  const expected = L.q/4;
+  const pace = p/expected;
+  let status = p>=1 ? "achieved" : pace>=0.9 ? "on" : pace>=0.7 ? "risk" : "off";
+  return {status, progress:p, pace, latest:L, expected};
+}
+const avg = a => a.length ? a.reduce((s,x)=>s+x,0)/a.length : null;
+function summarize(list, asOf){
+  const ev = list.map(k=>({k, e:evalKpi(k,asOf)}));
+  const withData = ev.filter(x=>x.e.progress!==null);
+  const counts = Object.fromEntries(STATUS_ORDER.map(s=>[s,0]));
+  ev.forEach(x=>counts[x.e.status]++);
+  const progress = avg(withData.map(x=>Math.min(1,x.e.progress)));
+  const expected = avg(withData.map(x=>x.e.expected));
+  return {ev, counts, n:list.length, reported:withData.length, progress, expected,
+    onTrackShare: withData.length ? (counts.achieved+counts.on)/withData.length : null};
+}
+
+/* ================= State & storage ================= */
+const LS = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
+const state = {
+  kpis:[], goals:DEFAULT_GOALS.map(g=>({...g})), mode:"local", ready:false,
+  view:"overview", layout:LS.get("dw.layout","table"), sort:{key:"status",dir:1},
+  me:LS.get("dw.me",null), openEdit:null,
+  f:Object.assign({members:[], goals:[], status:"", asOf:3, q:"", hideSample:false}, LS.get("dw.filters",{}))
+};
+let db = null, canWrite = true;
+
+const Store = {
+  async init(){
+    if (window.claude && typeof window.claude.use === "function"){
+      setMode("connecting");
+      try { db = await window.claude.use("db"); } catch(e){ db = null; }
+    }
+    if (db){
+      state.mode = "live"; setMode("live");
+      db.collection("kpis").onSnapshot(snap=>{
+        state.kpis = snap.docs.map(d=>({id:d.id, ...d.data()}));
+        state.ready = true; renderAll();
+      }, err=>{ toast("Lost connection to team data. Reload to reconnect."); });
+      db.doc("config/goals").onSnapshot(s=>{
+        const d = s.exists ? s.data() : null;
+        if (d && Array.isArray(d.goals)) state.goals = DEFAULT_GOALS.map((g,i)=>({...g, name:d.goals[i]?.name||g.name}));
+        if (state.ready) renderAll();
+      }, ()=>{});
+    } else {
+      state.mode = "local"; setMode("local");
+      const saved = LS.get("dw.kpis.v1", null);
+      state.kpis = Array.isArray(saved) && saved.length ? saved : buildCatalog();
+      const g = LS.get("dw.goals.v1", null);
+      if (Array.isArray(g)) state.goals = DEFAULT_GOALS.map((d,i)=>({...d, name:g[i]?.name||d.name}));
+      if (!saved) Store.persistLocal();
+      state.ready = true; renderAll();
+    }
+  },
+  persistLocal(){ LS.set("dw.kpis.v1", state.kpis); },
+  async save(k){
+    k.updatedAt = Date.now();
+    if (state.mode==="live"){
+      const {id, ...body} = k;
+      await db.collection("kpis").doc(id).set(JSON.parse(JSON.stringify(body)));
+    } else {
+      const i = state.kpis.findIndex(x=>x.id===k.id);
+      if (i>=0) state.kpis[i]=k; else state.kpis.push(k);
+      Store.persistLocal(); renderAll();
+    }
+  },
+  async remove(id){
+    if (state.mode==="live") await db.collection("kpis").doc(id).delete();
+    else { state.kpis = state.kpis.filter(k=>k.id!==id); Store.persistLocal(); renderAll(); }
+  },
+  async saveGoals(names){
+    if (state.mode==="live") await db.doc("config/goals").set({goals:names.map(n=>({name:n}))});
+    else { LS.set("dw.goals.v1", names.map(n=>({name:n}))); state.goals = DEFAULT_GOALS.map((g,i)=>({...g,name:names[i]||g.name})); renderAll(); }
+  },
+  async replaceAll(list){
+    if (state.mode==="live"){
+      const keep = new Set(list.map(k=>k.id));
+      for (const k of state.kpis) if(!keep.has(k.id)) await db.collection("kpis").doc(k.id).delete();
+      for (const k of list){ const {id,...body}=k; await db.collection("kpis").doc(id).set(JSON.parse(JSON.stringify(body))); }
+    } else { state.kpis = list; Store.persistLocal(); renderAll(); }
+  }
+};
+function setMode(m){
+  const el = document.getElementById("modeBadge");
+  el.className = "mode" + (m==="live"?" live":"");
+  el.querySelector("span").textContent = m==="live" ? "Live team data" : m==="connecting" ? "Connecting…" : "Saved in this browser";
+}
+
+/* ================= Filtering ================= */
+function filtered(type){
+  const f = state.f, q = f.q.trim().toLowerCase();
+  return state.kpis.filter(k=>{
+    if (type && k.type!==type) return false;
+    if (f.members.length && !f.members.includes(k.member)) return false;
+    if (f.goals.length && !(k.goals||[]).some(g=>f.goals.includes(g))) return false;
+    if (f.hideSample && k.sample) return false;
+    if (q && !(`${k.name} ${k.measures} ${k.source} ${k.owner} ${memberById(k.member).full}`.toLowerCase().includes(q))) return false;
+    if (f.status && evalKpi(k,f.asOf).status!==f.status) return false;
+    return true;
+  });
+}
+function saveFilters(){ LS.set("dw.filters", state.f); }
+
+/* ================= Rendering ================= */
+const charts = {};
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function mkChart(id, cfg){
+  if (!window.Chart) { const c=document.getElementById(id); if(c) c.parentElement.innerHTML='<div class="empty-state">Charts need an internet connection to load.</div>'; return; }
+  if (charts[id]) charts[id].destroy();
+  const el = document.getElementById(id); if(!el) return;
+  Chart.defaults.font.family = css("--font"); Chart.defaults.color = css("--muted");
+  charts[id] = new Chart(el, cfg);
+}
+function gridOpts(){ return {color:css("--line"), drawTicks:false}; }
+
+function renderAll(){
+  if (!state.ready) return;
+  document.getElementById("loading").hidden = true;
+  renderFilters(); renderBanner(); renderTabsCounts();
+  const v = state.view;
+  document.getElementById("view-overview").hidden = v!=="overview";
+  document.getElementById("view-type").hidden = !(v==="internal"||v==="external");
+  document.getElementById("view-update").hidden = v!=="update";
+  document.getElementById("filterBar").hidden = v==="update";
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected", t.dataset.view===v));
+  const titles = {
+    overview:["2026 Goal Scorecard","How the team is tracking against the six Digital Workforce goals, KPI by KPI."],
+    internal:["Internal KPI Dashboard","How the CoE runs: delivery, governance, operations and enablement capacity."],
+    external:["External KPI Dashboard","What the business gets: adoption, reuse, value realized and readiness."],
+    update:["Update my KPIs","Enter this quarter's actuals. Dashboards refresh the moment you save."]
+  };
+  document.getElementById("pageTitle").textContent = titles[v][0];
+  document.getElementById("pageSub").textContent = titles[v][1];
+  if (v==="overview") renderOverview();
+  else if (v==="update") renderUpdate();
+  else renderType(v);
+}
+
+function renderTabsCounts(){
+  document.getElementById("ct-int").textContent = state.kpis.filter(k=>k.type==="internal").length;
+  document.getElementById("ct-ext").textContent = state.kpis.filter(k=>k.type==="external").length;
+}
+
+function renderFilters(){
+  const f = state.f;
+  document.getElementById("fMembers").innerHTML = MEMBERS.map(m=>
+    `<button type="button" class="chip" data-fm="${m.id}" aria-pressed="${f.members.includes(m.id)}">${avatar(m,16)}${esc(m.name)}</button>`).join("");
+  document.getElementById("fGoals").innerHTML = state.goals.map(g=>
+    `<button type="button" class="chip" data-fg="${g.n}" aria-pressed="${f.goals.includes(g.n)}" title="${esc(g.name)}"><span class="dot" style="background:${g.color}"></span>G${g.n}</button>`).join("");
+  document.getElementById("fStatus").value = f.status;
+  document.getElementById("fQuarter").value = String(f.asOf);
+  if (document.activeElement?.id!=="fSearch") document.getElementById("fSearch").value = f.q;
+  document.getElementById("fHideSample").checked = f.hideSample;
+}
+
+function renderBanner(){
+  const n = state.kpis.filter(k=>k.sample).length;
+  const el = document.getElementById("sampleBanner");
+  if (!n){ el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = `<span class="sample">SAMPLE</span><span><b>${n} of ${state.kpis.length} KPIs still show illustrative values.</b> Targets and baselines are proposals. Owners replace them with actuals in “Update my KPIs”.</span><span class="spacer"></span><button class="btn" type="button" data-goto="update">Update my KPIs</button>`;
+}
+
+function ringSVG(p, expected, size=148){
+  const r=60, c=2*Math.PI*r, val=Math.max(0,Math.min(1,p||0));
+  const exp = expected!=null ? Math.min(1,expected) : null;
+  const ang = exp!=null ? exp*2*Math.PI : 0;
+  const tx = 74+Math.cos(ang)*r, ty = 74+Math.sin(ang)*r;
+  return `<svg viewBox="0 0 148 148" aria-hidden="true">
+    <circle cx="74" cy="74" r="${r}" fill="none" stroke="${css("--track")}" stroke-width="14"/>
+    <circle cx="74" cy="74" r="${r}" fill="none" stroke="#00A03B" stroke-width="14" stroke-linecap="round" stroke-dasharray="${c*val} ${c}"/>
+    ${exp!=null?`<circle cx="${tx}" cy="${ty}" r="5" fill="${css("--surface")}" stroke="${css("--fg-strong")}" stroke-width="2.5"/>`:""}
+  </svg>`;
+}
+
+function renderOverview(){
+  const asOf = state.f.asOf, list = filtered(null), S = summarize(list, asOf);
+  document.getElementById("ovAsOf").textContent = `As of Q${asOf} 2026 · ${S.reported} of ${S.n} KPIs reporting`;
+  document.getElementById("ovRing").innerHTML = ringSVG(S.progress, S.expected) +
+    `<div class="c"><div><div class="big num">${pct(S.progress)}</div><div class="lbl">of 2026 targets</div></div></div>`;
+  const paceGap = S.progress!=null && S.expected ? S.progress - S.expected : null;
+  document.getElementById("ovRingSide").innerHTML =
+    `<div class="line"><span>Expected by now</span><b class="num">${pct(S.expected)}</b></div>
+     <div class="line"><span>Gap to pace</span><b class="num" style="color:${paceGap==null?"inherit":paceGap>=0?"var(--green-ink)":"#d81f34"}">${paceGap==null?"—":(paceGap>=0?"+":"")+Math.round(paceGap*100)+" pts"}</b></div>
+     <div class="stack" style="margin-top:6px">${STATUS_ORDER.map(s=>S.counts[s]?`<span style="width:${S.counts[s]/S.n*100}%;background:${STATUS[s].color}" title="${STATUS[s].label}: ${S.counts[s]}"></span>`:"").join("")}</div>
+     <div style="display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)">${STATUS_ORDER.map(s=>`<span><span class="legend-dot" style="background:${STATUS[s].color}"></span>${STATUS[s].label} <b class="num" style="color:var(--fg-strong)">${S.counts[s]}</b></span>`).join("")}</div>`;
+
+  const I = summarize(list.filter(k=>k.type==="internal"),asOf), E = summarize(list.filter(k=>k.type==="external"),asOf);
+  const updatedQ = list.filter(k=>!k.sample).length;
+  document.getElementById("ovTiles").innerHTML = [
+    tile("KPIs in view", S.n, `${I.n} internal · ${E.n} external`),
+    tile("On track or better", pct(S.onTrackShare), `${S.counts.achieved+S.counts.on} KPIs · ${S.counts.achieved} already achieved`),
+    tile("Internal progress", pct(I.progress), `${pct(I.onTrackShare)} on track`, "#00567A", I.progress),
+    tile("External progress", pct(E.progress), `${pct(E.onTrackShare)} on track`, "#00A03B", E.progress),
+  ].join("") ;
+
+  // Goals
+  document.getElementById("ovGoals").innerHTML = state.goals.map(g=>{
+    const gl = list.filter(k=>(k.goals||[]).includes(g.n)); const G = summarize(gl, asOf);
+    const mem = [...new Set(gl.map(k=>k.member))].map(memberById);
+    return `<button type="button" class="goal" data-goal="${g.n}" aria-pressed="${state.f.goals.includes(g.n)}">
+      <div class="top"><span class="gn" style="background:${g.color}">G${g.n}</span><span class="name">${esc(g.name)}</span><span class="pct num">${pct(G.progress)}</span></div>
+      <div class="bar"><span style="width:${Math.min(100,(G.progress||0)*100)}%;background:${g.color}"></span>${G.expected?`<i class="pace" style="left:${Math.min(100,G.expected*100)}%"></i>`:""}</div>
+      <div class="stack" title="Status mix">${G.n?STATUS_ORDER.map(s=>G.counts[s]?`<span style="width:${G.counts[s]/G.n*100}%;background:${STATUS[s].color}"></span>`:"").join(""):""}</div>
+      <div class="meta"><span class="num">${G.n} KPIs · ${G.counts.achieved+G.counts.on} on track · ${G.counts.off} off</span><span class="avs">${mem.map(m=>avatar(m)).join("")}</span></div>
+    </button>`;
+  }).join("");
+
+  // Trend chart
+  const trend = t => [1,2,3,4].map(q=>{ const s=summarize(list.filter(k=>k.type===t),q); const has=list.some(k=>k.type===t && k.q?.["q"+q]!=null && k.q["q"+q]!==""); return has&&s.progress!=null?Math.round(s.progress*100):null; });
+  mkChart("chTrend",{type:"line",data:{labels:["Q1","Q2","Q3","Q4"],datasets:[
+      {label:"Internal",data:trend("internal"),borderColor:"#00567A",backgroundColor:"rgba(0,86,122,.10)",fill:true,tension:.35,pointRadius:4,pointBackgroundColor:"#00567A",spanGaps:false},
+      {label:"External",data:trend("external"),borderColor:"#00A03B",backgroundColor:"rgba(0,160,59,.10)",fill:true,tension:.35,pointRadius:4,pointBackgroundColor:"#00A03B"},
+      {label:"Linear pace",data:[25,50,75,100],borderColor:css("--faint"),borderDash:[5,5],pointRadius:0,fill:false,borderWidth:1.5}
+    ]},options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+      scales:{y:{min:0,max:100,ticks:{callback:v=>v+"%",stepSize:25},grid:gridOpts(),border:{display:false}},x:{grid:{display:false}}},
+      plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:8}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y==null?"—":c.parsed.y+"%"}`}}}}});
+
+  // Mix chart (stacked horizontal)
+  mkChart("chMix",{type:"bar",data:{labels:["Internal","External"],datasets:STATUS_ORDER.map(s=>({label:STATUS[s].label,data:[I.counts[s],E.counts[s]],backgroundColor:STATUS[s].color,borderRadius:4,barThickness:34}))},
+    options:{indexAxis:"y",maintainAspectRatio:false,scales:{x:{stacked:true,grid:gridOpts(),border:{display:false},ticks:{precision:0}},y:{stacked:true,grid:{display:false}}},
+      plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:8}}}}});
+
+  // Heatmap
+  const heatColor = p => { if(p==null) return null; const a = 0.15+Math.min(1,p)*0.85; return `rgba(0,160,59,${a.toFixed(2)})`; };
+  let h = `<table><thead><tr><th></th>${state.goals.map(g=>`<th title="${esc(g.name)}"><span class="gchip" style="background:${g.color}">G${g.n}</span></th>`).join("")}<th>All</th></tr></thead><tbody>`;
+  const allMembers = state.f.members.length ? MEMBERS.filter(m=>state.f.members.includes(m.id)) : MEMBERS;
+  for (const m of allMembers){
+    h += `<tr><th class="row">${avatar(m)} ${esc(m.name)}</th>`;
+    for (const g of state.goals){
+      const s = summarize(list.filter(k=>k.member===m.id && (k.goals||[]).includes(g.n)), asOf);
+      if (!s.n) h += `<td class="empty">·</td>`;
+      else { const p=s.progress; h += `<td data-hm="${m.id}" data-hg="${g.n}" style="background:${heatColor(p)||css("--track")};color:${p!=null&&p>0.55?"#fff":"var(--fg-strong)"}" title="${esc(m.name)} · G${g.n}: ${s.n} KPIs, ${pct(p)}">${pct(p)}<div style="font-size:10px;font-weight:500;opacity:.85">${s.n} KPI${s.n>1?"s":""}</div></td>`; }
+    }
+    const s = summarize(list.filter(k=>k.member===m.id), asOf);
+    h += `<td data-hm="${m.id}" style="background:${css("--surface-2")};border:1px solid var(--line);color:var(--fg-strong)">${pct(s.progress)}</td></tr>`;
+  }
+  document.getElementById("ovHeat").innerHTML = h + "</tbody></table>";
+
+  // Members
+  document.getElementById("ovMembers").innerHTML = allMembers.map(m=>{
+    const ml = list.filter(k=>k.member===m.id), s=summarize(ml,asOf);
+    const si = summarize(ml.filter(k=>k.type==="internal"),asOf), se = summarize(ml.filter(k=>k.type==="external"),asOf);
+    const row = (lbl,x,col)=>`<span>${lbl}</span><div class="bar"><span style="width:${Math.min(100,(x.progress||0)*100)}%;background:${col}"></span></div><b class="num" style="color:var(--fg-strong)">${x.n?pct(x.progress):"—"}</b>`;
+    return `<div class="member"><div class="who">${avatar(m)}<div><b>${esc(m.full)}</b><small>${s.n} KPIs · ${s.counts.achieved+s.counts.on} on track${s.counts.off?` · <span style="color:#d81f34">${s.counts.off} off track</span>`:""}</small></div></div>
+      <div class="split">${row("Internal",si,"#00567A")}${row("External",se,"#00A03B")}</div>
+      <div class="stack">${s.n?STATUS_ORDER.map(st=>s.counts[st]?`<span style="width:${s.counts[st]/s.n*100}%;background:${STATUS[st].color}"></span>`:"").join(""):""}</div>
+      <div class="actions"><button class="btn" type="button" data-fm-only="${m.id}">View KPIs</button><span class="spacer"></span><button class="linkbtn" type="button" data-update-as="${m.id}">Update →</button></div></div>`;
+  }).join("");
+
+  // Feed
+  const feed = [...list].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).slice(0,12);
+  document.getElementById("ovFeed").innerHTML = feed.length ? feed.map(k=>{
+    const m=memberById(k.member), L=latest(k,4);
+    return `<div class="it" data-kpi="${esc(k.id)}" style="cursor:pointer">${avatar(m)}<div><span class="k">${esc(k.name)}</span><div style="color:var(--muted)">${esc(m.name)} · ${L?`Q${L.q}: ${fmt(L.v,k.unit)}`:"no value yet"} ${k.sample?'<span class="sample">SAMPLE</span>':""}</div></div><span class="t">${ago(k.updatedAt)}</span></div>`;
+  }).join("") : `<div class="empty-state">No updates yet.</div>`;
+}
+
+function tile(label, value, detail, color, p){
+  return `<div class="tile"><div class="eyebrow">${label}</div><div class="v num">${value}</div><div class="d">${detail}</div>${p!=null&&color?`<div class="bar" style="margin-top:10px"><span style="width:${Math.min(100,p*100)}%;background:${color}"></span></div>`:""}</div>`;
+}
+
+function renderType(type){
+  const asOf = state.f.asOf, list = filtered(type), S = summarize(list, asOf);
+  const col = type==="internal" ? "#00567A" : "#00A03B";
+  const lbl = type==="internal" ? "Internal" : "External";
+  document.getElementById("tyTiles").innerHTML = [
+    tile(`${lbl} KPIs`, S.n, `${S.reported} reporting as of Q${asOf}`),
+    tile("Average progress", pct(S.progress), `Expected by now: ${pct(S.expected)}`, col, S.progress),
+    tile("On track or better", pct(S.onTrackShare), `${S.counts.achieved} achieved · ${S.counts.on} on track`),
+    tile("Needs attention", S.counts.risk+S.counts.off, `${S.counts.risk} at risk · ${S.counts.off} off track`)
+  ].join("");
+  document.getElementById("tyGoalSub").textContent = `Average ${lbl.toLowerCase()} KPI progress per goal vs. where we should be by Q${asOf}`;
+
+  const gStats = state.goals.map(g=>summarize(list.filter(k=>(k.goals||[]).includes(g.n)),asOf));
+  mkChart("chTyGoal",{type:"bar",data:{labels:state.goals.map(g=>"G"+g.n),datasets:[
+      {label:"Progress",data:gStats.map(s=>s.progress==null?null:Math.round(s.progress*100)),backgroundColor:state.goals.map(g=>g.color),borderRadius:6,maxBarThickness:42,order:2},
+      {label:"Expected pace",type:"line",data:gStats.map(s=>s.expected==null?null:Math.round(s.expected*100)),borderColor:css("--fg-strong"),pointStyle:"line",pointRadius:14,pointBorderWidth:2.5,showLine:false,order:1}
+    ]},options:{maintainAspectRatio:false,scales:{y:{min:0,max:100,ticks:{callback:v=>v+"%",stepSize:25},grid:gridOpts(),border:{display:false}},x:{grid:{display:false}}},
+      plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:8}},tooltip:{callbacks:{title:c=>{const g=state.goals[c[0].dataIndex];return `G${g.n} · ${g.name}`;},label:c=>`${c.dataset.label}: ${c.parsed.y==null?"—":c.parsed.y+"%"} (${gStats[c.dataIndex].n} KPIs)`}}}}});
+
+  const mems = state.f.members.length ? MEMBERS.filter(m=>state.f.members.includes(m.id)) : MEMBERS;
+  const mStats = mems.map(m=>summarize(list.filter(k=>k.member===m.id),asOf));
+  mkChart("chTyMember",{type:"bar",data:{labels:mems.map(m=>m.name),datasets:STATUS_ORDER.map(s=>({label:STATUS[s].label,data:mStats.map(x=>x.counts[s]),backgroundColor:STATUS[s].color,borderRadius:3,maxBarThickness:26}))},
+    options:{indexAxis:"y",maintainAspectRatio:false,scales:{x:{stacked:true,grid:gridOpts(),border:{display:false},ticks:{precision:0}},y:{stacked:true,grid:{display:false}}},
+      plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:8}}}}});
+
+  document.getElementById("tyListTitle").textContent = `${lbl} KPIs`;
+  document.getElementById("tyListSub").textContent = `${list.length} KPIs · click any row for detail`;
+  document.getElementById("lyTable").setAttribute("aria-pressed", state.layout==="table");
+  document.getElementById("lyCards").setAttribute("aria-pressed", state.layout==="cards");
+
+  const rows = S.ev.slice();
+  const so = state.sort, rank = s=>STATUS_ORDER.indexOf(s);
+  const keyf = {
+    name:x=>x.k.name.toLowerCase(), member:x=>memberById(x.k.member).name, goal:x=>(x.k.goals||[99])[0],
+    progress:x=>x.e.progress??-1, status:x=>rank(x.e.status)===4? -1 : 10-rank(x.e.status), updated:x=>x.k.updatedAt||0
+  }[so.key] || (x=>0);
+  rows.sort((a,b)=>{ const A=keyf(a),B=keyf(b); return (A<B?-1:A>B?1:0)*so.dir; });
+  if (so.key==="status") rows.sort((a,b)=>(rank(a.e.status)-rank(b.e.status))*-so.dir || (a.e.pace??0)-(b.e.pace??0));
+
+  const box = document.getElementById("tyList");
+  if (!rows.length){ box.innerHTML = `<div class="empty-state"><b>No KPIs match these filters</b>Try clearing a filter or switching the as-of quarter.</div>`; return; }
+  if (state.layout==="cards"){
+    box.innerHTML = `<div class="kcards">${rows.map(({k,e})=>{const m=memberById(k.member);return `<button type="button" class="kcard" data-kpi="${esc(k.id)}">
+      <div class="h"><span class="n">${esc(k.name)}</span>${statusPill(e.status)}</div>
+      <div class="big num">${e.latest?fmt(e.latest.v,k.unit):"—"}<small>target ${fmt(k.target,k.unit)}</small></div>
+      ${progBar(e, goalColor(k))}
+      <div style="height:34px">${spark(k, goalColor(k))}</div>
+      <div class="f"><span>${avatar(m)} ${esc(m.name)}</span><span>${goalChips(k)}</span></div></button>`;}).join("")}</div>`;
+    return;
+  }
+  const th = (key,label)=>`<th ${key?`data-sort="${key}"`:""}>${label}${so.key===key?`<span class="arr">${so.dir>0?"▲":"▼"}</span>`:""}</th>`;
+  box.innerHTML = `<div class="tablewrap"><table class="kpis"><thead><tr>${th("name","KPI")}${th("member","Owner")}${th("goal","Goals")}<th>Latest vs target</th>${th("progress","Progress")}<th>Trend</th>${th("status","Status")}${th("updated","Updated")}</tr></thead><tbody>
+    ${rows.map(({k,e})=>{const m=memberById(k.member);return `<tr data-kpi="${esc(k.id)}" tabindex="0">
+      <td><div class="kname">${esc(k.name)} ${k.sample?'<span class="sample">SAMPLE</span>':""}<small>${esc(k.measures)}</small></div></td>
+      <td style="white-space:nowrap">${avatar(m)} ${esc(m.name)}</td>
+      <td style="white-space:nowrap">${goalChips(k)}</td>
+      <td class="vals num"><b>${e.latest?fmt(e.latest.v,k.unit):"—"}</b> <span>/ ${fmt(k.target,k.unit)}${e.latest?` · Q${e.latest.q}`:""}</span></td>
+      <td class="progcell num">${pct(e.progress)}${progBar(e, goalColor(k))}</td>
+      <td style="width:110px">${spark(k, goalColor(k))}</td>
+      <td>${statusPill(e.status)}</td>
+      <td style="color:var(--muted);font-size:12px;white-space:nowrap">${ago(k.updatedAt)}</td></tr>`;}).join("")}
+  </tbody></table></div>`;
+}
+const goalColor = k => (state.goals.find(g=>g.n===(k.goals||[])[0])||{color:"#00A03B"}).color;
+const statusPill = s => `<span class="pill ${STATUS[s].cls}">${STATUS[s].label}</span>`;
+const goalChips = k => (k.goals||[]).map(n=>{const g=state.goals.find(x=>x.n===n);return g?`<span class="gchip" style="background:${g.color}" title="${esc(g.name)}">G${n}</span>`:"";}).join(" ");
+function progBar(e,color){ return `<div class="bar"><span style="width:${Math.min(100,(e.progress||0)*100)}%;background:${STATUS[e.status].color}"></span>${e.expected?`<i class="pace" style="left:${Math.min(100,e.expected*100)}%" title="Expected by now"></i>`:""}</div>`; }
+function spark(k,color){
+  const vals=[1,2,3,4].map(q=>{const v=k.q?.["q"+q];return v===null||v===undefined||v===""?null:+v;});
+  const pts=vals.map((v,i)=>v==null?null:[i,v]).filter(Boolean);
+  if(!pts.length) return `<span style="color:var(--faint);font-size:12px">no data</span>`;
+  const lo=Math.min(+k.baseline||0,...pts.map(p=>p[1])), hi=Math.max(+k.target||0,...pts.map(p=>p[1]));
+  const W=100,H=30,x=i=>4+i*(W-8)/3,y=v=>H-3-(hi===lo?0.5:(v-lo)/(hi-lo))*(H-6);
+  const d=pts.map((p,i)=>`${i?"L":"M"}${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`).join(" ");
+  const area=`${d} L${x(pts[pts.length-1][0]).toFixed(1)},${H} L${x(pts[0][0]).toFixed(1)},${H} Z`;
+  const last=pts[pts.length-1];
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none" aria-hidden="true">
+    <line x1="0" x2="${W}" y1="${y(+k.target).toFixed(1)}" y2="${y(+k.target).toFixed(1)}" stroke="${css("--faint")}" stroke-dasharray="3 3" stroke-width="1" vector-effect="non-scaling-stroke"/>
+    <path d="${area}" fill="${color}" fill-opacity=".14"/>
+    <path d="${d}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+    <circle cx="${x(last[0])}" cy="${y(last[1])}" r="3" fill="${color}"/></svg>`;
+}
+
+/* ================= Drawer ================= */
+function openDrawer(id){
+  const k = state.kpis.find(x=>x.id===id); if(!k) return;
+  const e = evalKpi(k, state.f.asOf), m = memberById(k.member);
+  const d = document.getElementById("drawer");
+  d.innerHTML = `<header style="position:relative">
+      <button class="btn ghost x" type="button" data-close-drawer aria-label="Close">✕</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="tchip ${k.type==="internal"?"t-int":"t-ext"}">${k.type==="internal"?"Internal":"External"}</span>${goalChips(k)}${k.sample?'<span class="sample">SAMPLE VALUES</span>':""}</div>
+      <h2 style="font-size:20px;padding-right:40px">${esc(k.name)}</h2>
+      <div style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px">${avatar(m)} ${esc(m.full)} · updated ${ago(k.updatedAt)||"—"}</div>
+    </header>
+    <div class="content">
+      <div class="kstats">
+        <div class="tile"><div class="eyebrow">Latest</div><div class="v num" style="font-size:22px">${e.latest?fmt(e.latest.v,k.unit):"—"}</div><div class="d">${e.latest?"Q"+e.latest.q+" 2026":"not reported"}</div></div>
+        <div class="tile"><div class="eyebrow">Target</div><div class="v num" style="font-size:22px">${fmt(k.target,k.unit)}</div><div class="d">baseline ${fmt(k.baseline,k.unit)}</div></div>
+        <div class="tile"><div class="eyebrow">Progress</div><div class="v num" style="font-size:22px">${pct(e.progress)}</div><div class="d">${statusPill(e.status)}</div></div>
+      </div>
+      <div class="chartbox sm"><canvas id="chDrawer"></canvas></div>
+      <dl class="dl">
+        <dt>What it measures</dt><dd>${esc(k.measures)}</dd>
+        <dt>Why it matters</dt><dd>${esc(k.why)}</dd>
+        <dt>Source system</dt><dd>${esc(k.source)}</dd>
+        <dt>KPI owner</dt><dd>${esc(k.owner)}</dd>
+        <dt>Goal alignment</dt><dd>${(k.goals||[]).map(n=>{const g=state.goals.find(x=>x.n===n);return g?`G${n} – ${esc(g.name)}`:"";}).join("<br>")}</dd>
+        ${k.comment?`<dt>Latest note</dt><dd>${esc(k.comment)}</dd>`:""}
+      </dl>
+      <div class="actions"><button class="btn primary" type="button" data-edit-kpi="${esc(k.id)}">Update this KPI</button></div>
+    </div>`;
+  d.classList.add("open"); d.setAttribute("aria-hidden","false");
+  document.getElementById("scrim").classList.add("open");
+  const vals=[1,2,3,4].map(q=>{const v=k.q?.["q"+q];return v===null||v===undefined||v===""?null:+v;});
+  const col = goalColor(k);
+  mkChart("chDrawer",{type:"bar",data:{labels:["Q1","Q2","Q3","Q4"],datasets:[
+    {label:"Actual",data:vals,backgroundColor:col,borderRadius:6,maxBarThickness:46,order:2},
+    {label:"Target",type:"line",data:[k.target,k.target,k.target,k.target],borderColor:css("--fg-strong"),borderDash:[6,4],pointRadius:0,borderWidth:1.5,order:1},
+    {label:"Linear path",type:"line",data:[1,2,3,4].map(q=>(+k.baseline||0)+((+k.target)-(+k.baseline||0))*q/4),borderColor:css("--faint"),pointRadius:0,borderWidth:1,order:1}
+  ]},options:{maintainAspectRatio:false,scales:{y:{beginAtZero:true,grid:gridOpts(),border:{display:false},ticks:{callback:v=>fmt(v,k.unit)}},x:{grid:{display:false}}},
+    plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:8}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmt(c.parsed.y,k.unit)}`}}}}});
+}
+function closeDrawer(){ const d=document.getElementById("drawer"); d.classList.remove("open"); d.setAttribute("aria-hidden","true"); document.getElementById("scrim").classList.remove("open"); }
+
+/* ================= Update view ================= */
+function renderUpdate(){
+  document.getElementById("whoPick").innerHTML = MEMBERS.map(m=>{
+    const n=state.kpis.filter(k=>k.member===m.id).length, s=state.kpis.filter(k=>k.member===m.id&&k.sample).length;
+    return `<button type="button" class="whobtn" data-me="${m.id}" aria-pressed="${state.me===m.id}">${avatar(m)}<span><b>${esc(m.full)}</b><small>${n} KPIs${s?` · ${s} need actuals`:" · all reported"}</small></span></button>`;
+  }).join("");
+  const area = document.getElementById("editArea");
+  if (!state.me){ area.innerHTML = `<div class="card empty-state"><b>Pick your name above</b>Your KPIs open here as editable cards.</div>`; return; }
+  // Keep unsaved edits: only rebuild when nothing is dirty.
+  if (area.querySelector(".edit.dirty")) { return; }
+  const m = memberById(state.me), mine = state.kpis.filter(k=>k.member===state.me).sort((a,b)=>a.type.localeCompare(b.type)||a.id.localeCompare(b.id));
+  const asOf = state.f.asOf;
+  area.innerHTML = `<div class="card"><div class="cardhead"><div><h2>${esc(m.full)}'s KPIs</h2><div class="sub">Enter values as they stand at each quarter end. Leave a quarter empty until it is reported. Progress uses the latest quarter you fill in.</div></div>
+      <div class="actions"><button class="btn" type="button" id="expandAll">Expand all</button><button class="btn primary" type="button" id="addKpi">+ Add KPI</button></div></div>
+    <div class="editlist">${mine.map(k=>editCard(k,asOf)).join("") || `<div class="empty-state"><b>No KPIs yet</b>Add your first KPI to start tracking.</div>`}</div></div>`;
+  if (state.openEdit){ const el=area.querySelector(`[data-edit="${CSS.escape(state.openEdit)}"]`); if(el){ el.open=true; el.classList.add("flash"); el.scrollIntoView({block:"center",behavior:"smooth"}); } state.openEdit=null; }
+}
+function editCard(k, asOf){
+  const e = evalKpi(k, 4);
+  const qv = q => k.q?.["q"+q]==null ? "" : k.q["q"+q];
+  const fid = (f)=>`${k.id}-${f}`;
+  return `<details class="edit" data-edit="${esc(k.id)}">
+    <summary><div style="min-width:0"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="tchip ${k.type==="internal"?"t-int":"t-ext"}">${k.type==="internal"?"Internal":"External"}</span>${goalChips(k)}${k.sample?'<span class="sample">SAMPLE</span>':""}</div>
+      <div style="font-weight:600;color:var(--fg-strong);margin-top:6px">${esc(k.name)}</div></div>
+      <div class="st"><span class="num" style="color:var(--muted);font-size:12.5px">${e.latest?`Q${e.latest.q}: <b style="color:var(--fg-strong)">${fmt(e.latest.v,k.unit)}</b> / ${fmt(k.target,k.unit)}`:"No value yet"}</span>${statusPill(e.status)}</div></summary>
+    <div class="body">
+      <div class="qrow">
+        ${[1,2,3,4].map(q=>`<div class="field"><label for="${fid("q"+q)}">Q${q} actual</label><input id="${fid("q"+q)}" data-f="q${q}" inputmode="decimal" value="${esc(qv(q))}" placeholder="—"></div>`).join("")}
+        <div class="field"><label for="${fid("baseline")}">Baseline</label><input id="${fid("baseline")}" data-f="baseline" inputmode="decimal" value="${esc(k.baseline)}"></div>
+        <div class="field"><label for="${fid("target")}">2026 target</label><input id="${fid("target")}" data-f="target" inputmode="decimal" value="${esc(k.target)}"></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label for="${fid("name")}">KPI name</label><input id="${fid("name")}" data-f="name" value="${esc(k.name)}"></div>
+        <div class="field"><label for="${fid("unit")}">Unit</label><select id="${fid("unit")}" data-f="unit">${Object.entries(UNITS).map(([u,l])=>`<option value="${u}" ${u===k.unit?"selected":""}>${l}</option>`).join("")}</select></div>
+        <div class="field"><label for="${fid("type")}">Dashboard</label><select id="${fid("type")}" data-f="type"><option value="internal" ${k.type==="internal"?"selected":""}>Internal</option><option value="external" ${k.type==="external"?"selected":""}>External</option></select></div>
+      </div>
+      <div class="field"><span class="lab">Goal alignment</span><div class="goalpick">${state.goals.map(g=>`<label><input type="checkbox" data-goalbox="${g.n}" ${(k.goals||[]).includes(g.n)?"checked":""}><span class="gchip" style="background:${g.color}">G${g.n}</span>${esc(g.name)}</label>`).join("")}</div></div>
+      <div class="frow">
+        <div class="field"><label for="${fid("measures")}">What it measures</label><textarea id="${fid("measures")}" data-f="measures">${esc(k.measures)}</textarea></div>
+        <div class="field"><label for="${fid("source")}">Source system</label><textarea id="${fid("source")}" data-f="source">${esc(k.source)}</textarea></div>
+        <div class="field"><label for="${fid("comment")}">Note for this update</label><textarea id="${fid("comment")}" data-f="comment" placeholder="Context, blockers, next steps">${esc(k.comment)}</textarea></div>
+      </div>
+      <div class="actions">
+        <span class="preview" data-preview></span><span class="spacer"></span>
+        <span class="hint" data-confirm></span>
+        <button class="btn danger" type="button" data-del="${esc(k.id)}">Delete</button>
+        <button class="btn" type="button" data-cancel="${esc(k.id)}">Discard changes</button>
+        <button class="btn primary" type="button" data-save="${esc(k.id)}" disabled>Save</button>
+      </div>
+    </div></details>`;
+}
+function readEdit(card){
+  const id = card.dataset.edit, k = JSON.parse(JSON.stringify(state.kpis.find(x=>x.id===id)||{id}));
+  const num = v => { v=String(v).trim().replace(/,/g,""); return v===""?null:(isNaN(+v)?NaN:+v); };
+  const val = f => card.querySelector(`[data-f="${f}"]`).value;
+  k.q = {}; for(let q=1;q<=4;q++) k.q["q"+q] = num(val("q"+q));
+  k.baseline = num(val("baseline")) ?? 0; k.target = num(val("target"));
+  k.name = val("name").trim() || "Untitled KPI"; k.unit = val("unit"); k.type = val("type");
+  k.measures = val("measures"); k.source = val("source"); k.comment = val("comment");
+  k.goals = [...card.querySelectorAll("[data-goalbox]:checked")].map(x=>+x.dataset.goalbox);
+  return k;
+}
+function validate(k){
+  for (let q=1;q<=4;q++) if (Number.isNaN(k.q["q"+q])) return `Q${q} must be a number.`;
+  if (k.target===null || Number.isNaN(k.target)) return "Enter a numeric 2026 target.";
+  if (Number.isNaN(k.baseline)) return "Baseline must be a number.";
+  if (!k.goals.length) return "Align the KPI to at least one goal.";
+  return "";
+}
+function refreshPreview(card){
+  const k = readEdit(card), err = validate(k), p = card.querySelector("[data-preview]");
+  if (err){ p.innerHTML = `<span style="color:#d81f34">${esc(err)}</span>`; card.querySelector("[data-save]").disabled = true; return; }
+  const e = evalKpi(k,4);
+  p.innerHTML = `After saving: ${statusPill(e.status)} <span class="num">${pct(e.progress)} of target</span>`;
+  card.querySelector("[data-save]").disabled = !card.classList.contains("dirty");
+}
+
+/* ================= Export ================= */
+function csvOf(list){
+  const head=["Member","Type","KPI","What it measures","Why it matters","Source system","KPI owner","Goals","Unit","Baseline","Target","Q1","Q2","Q3","Q4",`Progress (as of Q${state.f.asOf})`,"Status","Sample values","Note","Updated"];
+  const q = s => `"${String(s??"").replace(/"/g,'""')}"`;
+  const rows = list.map(k=>{const e=evalKpi(k,state.f.asOf);return [memberById(k.member).full,k.type,k.name,k.measures,k.why,k.source,k.owner,(k.goals||[]).map(g=>"G"+g).join(" "),k.unit,k.baseline,k.target,k.q?.q1??"",k.q?.q2??"",k.q?.q3??"",k.q?.q4??"",e.progress==null?"":Math.round(e.progress*100)+"%",STATUS[e.status].label,k.sample?"yes":"no",k.comment,k.updatedAt?new Date(k.updatedAt).toISOString():""].map(q).join(",");});
+  return [head.map(q).join(","),...rows].join("\n");
+}
+async function download(filename, text, type){
+  const dl = window.claude?.use ? await window.claude.use("downloads").catch(()=>null) : null;
+  if (dl){ try{ await dl.save({filename, data:text}); toast("Download ready"); }catch(e){ toast("Download cancelled"); } return; }
+  try{ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=filename; document.body.appendChild(a); a.click(); a.remove(); }
+  catch(e){ toast("This view blocks downloads."); }
+}
+
+/* ================= UI plumbing ================= */
+let toastT; function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2400); }
+function go(view){ state.view=view; try{ history.replaceState(null,"","#"+view); }catch(e){} renderAll(); window.scrollTo({top:0,behavior:"smooth"}); }
+function toggleIn(arr,v){ const i=arr.indexOf(v); if(i>=0) arr.splice(i,1); else arr.push(v); }
+
+document.addEventListener("click", async ev=>{
+  const t = ev.target.closest("button,[data-kpi],td[data-hm],label,[data-close],summary");
+  if (!t) return;
+  if (t.matches(".tab")) return go(t.dataset.view);
+  if (t.dataset.goto) return go(t.dataset.goto);
+  if (t.dataset.fm){ toggleIn(state.f.members,t.dataset.fm); saveFilters(); return renderAll(); }
+  if (t.dataset.fg){ toggleIn(state.f.goals,+t.dataset.fg); saveFilters(); return renderAll(); }
+  if (t.dataset.goal){ toggleIn(state.f.goals,+t.dataset.goal); saveFilters(); return renderAll(); }
+  if (t.dataset.fmOnly){ state.f.members=[t.dataset.fmOnly]; saveFilters(); return go("internal"); }
+  if (t.dataset.updateAs){ state.me=t.dataset.updateAs; LS.set("dw.me",state.me); return go("update"); }
+  if (t.dataset.hm){ state.f.members=[t.dataset.hm]; state.f.goals=t.dataset.hg?[+t.dataset.hg]:[]; saveFilters(); return go("internal"); }
+  if (t.id==="fClear"){ Object.assign(state.f,{members:[],goals:[],status:"",q:"",hideSample:false}); saveFilters(); return renderAll(); }
+  if (t.dataset.layout){ state.layout=t.dataset.layout; LS.set("dw.layout",state.layout); return renderAll(); }
+  if (t.matches("th[data-sort]")){ const k=t.dataset.sort; state.sort = state.sort.key===k?{key:k,dir:-state.sort.dir}:{key:k,dir:k==="name"||k==="member"||k==="goal"?1:-1}; return renderAll(); }
+  if (t.dataset.kpi){ return openDrawer(t.dataset.kpi); }
+  if (t.dataset.closeDrawer!==undefined && t.matches("[data-close-drawer]")) return closeDrawer();
+  if (t.dataset.editKpi){ const k=state.kpis.find(x=>x.id===t.dataset.editKpi); closeDrawer(); state.me=k.member; LS.set("dw.me",state.me); state.openEdit=k.id; const area=document.getElementById("editArea"); area.querySelectorAll(".edit.dirty").forEach(x=>x.classList.remove("dirty")); return go("update"); }
+  if (t.dataset.me){ const area=document.getElementById("editArea"); if(area.querySelector(".edit.dirty") && state.me!==t.dataset.me){ toast("Save or discard your open changes first"); return; } state.me=t.dataset.me; LS.set("dw.me",state.me); return renderAll(); }
+  if (t.id==="tyExport"){ return download(`dw-coe-${state.view}-kpis-Q${state.f.asOf}.csv`, csvOf(filtered(state.view)), "text/csv"); }
+  if (t.id==="expandAll"){ const all=[...document.querySelectorAll(".edit")]; const open=!all.every(d=>d.open); all.forEach(d=>d.open=open); t.textContent=open?"Collapse all":"Expand all"; return; }
+  if (t.id==="addKpi"){
+    const n = state.kpis.filter(k=>k.member===state.me).length+1;
+    const k = {id:`${state.me}-${Date.now().toString(36)}`, member:state.me, type:"internal", name:"New KPI", measures:"", why:"", source:"", owner:memberById(state.me).full, goals:[1], unit:"#", baseline:0, target:10, q:{q1:null,q2:null,q3:null,q4:null}, comment:"", sample:false};
+    state.openEdit = k.id; await Store.save(k); toast("KPI added. Fill in the details and save."); return;
+  }
+  if (t.dataset.save){
+    const card = t.closest(".edit"), k = readEdit(card), err = validate(k);
+    if (err){ toast(err); return; }
+    k.sample = false; t.disabled = true; t.textContent="Saving…";
+    try{ card.classList.remove("dirty"); state.openEdit = k.id; await Store.save(k); toast("Saved. Dashboards updated."); }
+    catch(e){ card.classList.add("dirty"); t.disabled=false; t.textContent="Save"; toast(e?.code==="invalid_argument"?"You have view-only access, so changes can't be saved.":"Couldn't save. Check your connection and try again."); }
+    return;
+  }
+  if (t.dataset.cancel){ const card=t.closest(".edit"); card.classList.remove("dirty"); state.openEdit=t.dataset.cancel; return renderUpdate(); }
+  if (t.dataset.del){
+    const card=t.closest(".edit"), c=card.querySelector("[data-confirm]");
+    if (t.dataset.armed){ card.classList.remove("dirty"); await Store.remove(t.dataset.del); toast("KPI deleted"); return; }
+    t.dataset.armed="1"; t.textContent="Confirm delete"; c.textContent="This removes the KPI for everyone."; setTimeout(()=>{ if(t.isConnected){ delete t.dataset.armed; t.textContent="Delete"; c.textContent=""; } },4000); return;
+  }
+  if (t.id==="openSettings") return openSettings();
+  if (t.matches("[data-close]")) return closeSettings();
+  if (t.id==="saveGoals"){ const names=[...document.querySelectorAll("[data-goalname]")].map(i=>i.value.trim()); await Store.saveGoals(names).then(()=>toast("Goal names saved")).catch(()=>toast("Couldn't save goal names")); return; }
+  if (t.id==="exportCsv") return download("dw-coe-kpis.csv", csvOf(state.kpis), "text/csv");
+  if (t.id==="exportJson") return download("dw-coe-kpis-backup.json", JSON.stringify({goals:state.goals.map(g=>({n:g.n,name:g.name})),kpis:state.kpis},null,2), "application/json");
+  if (t.id==="clearSample" || t.id==="resetCatalog"){
+    const line=document.getElementById("confirmLine");
+    if (!t.dataset.armed){ t.dataset.armed="1"; const orig=t.textContent; t.textContent="Click again to confirm"; line.textContent = t.id==="clearSample" ? "Removes every illustrative quarterly value. Owner-entered values stay." : "Replaces all KPIs with the original 2026 catalog. Entered values are lost."; setTimeout(()=>{ delete t.dataset.armed; t.textContent=orig; line.textContent=""; },4000); return; }
+    if (t.id==="clearSample"){ const list = state.kpis.map(k=>k.sample?{...k,q:{q1:null,q2:null,q3:null,q4:null},sample:false,updatedAt:Date.now()}:k); await Store.replaceAll(list); toast("Sample values cleared"); }
+    else { await Store.replaceAll(buildCatalog()); toast("Catalog restored"); }
+    delete t.dataset.armed; closeSettings(); return;
+  }
+});
+document.getElementById("scrim").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeDrawer(); closeSettings(); } if((e.key==="Enter"||e.key===" ") && e.target.matches("tr[data-kpi],.feed .it")){ e.preventDefault(); openDrawer(e.target.dataset.kpi); } });
+document.addEventListener("input", e=>{
+  const card = e.target.closest(".edit");
+  if (card){ card.classList.add("dirty"); refreshPreview(card); return; }
+  if (e.target.id==="fSearch"){ state.f.q=e.target.value; saveFilters(); clearTimeout(window._st); window._st=setTimeout(renderAll,180); }
+});
+document.addEventListener("change", e=>{
+  const card = e.target.closest(".edit");
+  if (card){ card.classList.add("dirty"); refreshPreview(card); return; }
+  if (e.target.id==="fStatus"){ state.f.status=e.target.value; saveFilters(); renderAll(); }
+  if (e.target.id==="fQuarter"){ state.f.asOf=+e.target.value; saveFilters(); renderAll(); }
+  if (e.target.id==="fHideSample"){ state.f.hideSample=e.target.checked; saveFilters(); renderAll(); }
+  if (e.target.id==="importJson"){
+    const file=e.target.files[0]; if(!file) return;
+    const r=new FileReader(); r.onload=async()=>{ try{ const d=JSON.parse(r.result); const list=Array.isArray(d)?d:d.kpis; if(!Array.isArray(list)) throw 0; await Store.replaceAll(list); if(d.goals) await Store.saveGoals(d.goals.map(g=>g.name)); toast(`Imported ${list.length} KPIs`); closeSettings(); }catch(err){ toast("That file isn't a KPI backup from this app."); } e.target.value=""; };
+    r.readAsText(file);
+  }
+});
+function openSettings(){
+  document.getElementById("goalEdit").innerHTML = state.goals.map(g=>`<div style="display:flex;gap:8px;align-items:center"><span class="gchip" style="background:${g.color}">G${g.n}</span><input class="ctl" style="flex:1" id="goalname-${g.n}" data-goalname="${g.n}" value="${esc(g.name)}" aria-label="Goal ${g.n} name"></div>`).join("");
+  document.getElementById("dataModeHint").textContent = state.mode==="live"
+    ? "Live mode: every team member who opens this page sees the same data, and saves appear for everyone within seconds."
+    : "Local mode: data is saved in this browser only. Use Export JSON to share a snapshot and Import JSON to load one. Publish the page to share live data with the team.";
+  document.getElementById("settings").hidden = false;
+}
+function closeSettings(){ document.getElementById("settings").hidden = true; }
+
+/* Re-render charts when the theme flips */
+try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>renderAll()); }catch(e){}
+new MutationObserver(()=>renderAll()).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* Boot */
+(function(){
+  const h = (location.hash||"").slice(1);
+  if (["overview","internal","external","update"].includes(h)) state.view = h;
+  Store.init();
+})();
+</script>
+</body>
+</html>
