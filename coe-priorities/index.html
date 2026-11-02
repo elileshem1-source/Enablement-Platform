@@ -1,0 +1,1216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoE Priorities Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6f5; --surface:#ffffff; --surface-2:#f8faf9; --ink:#1c2526; --ink-2:#3d4a4c; --muted:#6b7a7c; --line:#e3e8e7; --line-2:#eef2f1;
+  --brand:#00567a; --brand-2:#00aca8; --brand-ink:#ffffff; --brand-soft:#e6f2f5;
+  --s-done:#00a03b; --s-doing:#1f6fd1; --s-todo:#a3b0b2; --s-blocked:#d9342b; --s-na:#d5dcdb;
+  --h-on:#00a03b; --h-risk:#e08a00; --h-off:#d9342b; --h-done:#00567a; --h-none:#a3b0b2;
+  --g1:#00567a; --g2:#00aca8; --g3:#00a03b; --g4:#8aa520; --g5:#aa198d; --g6:#6b4fbb;
+  --radius:14px; --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06); --shadow-lg:0 12px 40px rgba(16,24,40,.18);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--brand)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- App shell ---------- */
+.topbar{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1400px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;letter-spacing:.5px;flex:none}
+.brand h1{font-size:16px;margin:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand small{display:block;color:var(--muted);font-size:12px;font-weight:500}
+.spacer{flex:1}
+.qpick{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px}
+.qpick select{border:0;background:transparent;font-weight:600;padding:5px 6px;outline:none}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 13px;font-weight:600;font-size:13px;white-space:nowrap;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--surface-2);border-color:#cfd7d6}
+.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.primary:hover{background:#00465f}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--line-2)}
+.btn.sm{padding:5px 9px;font-size:12px;border-radius:8px}
+.btn.danger{color:var(--s-blocked)}
+.btn svg{width:16px;height:16px;flex:none}
+.iconbtn{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.iconbtn:hover{background:var(--surface-2)}
+.iconbtn svg{width:18px;height:18px}
+.menu-wrap{position:relative}
+.menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-lg);padding:6px;min-width:220px;display:none;z-index:40}
+.menu.open{display:block}
+.menu button{display:flex;width:100%;align-items:center;gap:10px;border:0;background:none;padding:9px 10px;border-radius:8px;text-align:left;font-weight:500}
+.menu button:hover{background:var(--surface-2)}
+.menu hr{border:0;border-top:1px solid var(--line);margin:5px 0}
+.menu svg{width:16px;height:16px;color:var(--muted)}
+
+.tabs{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tab{border:0;background:none;padding:10px 14px 12px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--brand);border-bottom-color:var(--brand)}
+.tab .count{display:inline-block;margin-left:6px;background:var(--line-2);color:var(--ink-2);border-radius:20px;padding:0 7px;font-size:11px}
+
+main{max-width:1400px;margin:0 auto;padding:22px 24px 80px}
+.view{display:none}
+.view.active{display:block;animation:fade .2s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.page-head{display:flex;align-items:flex-end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.page-head h2{margin:0;font-size:22px;letter-spacing:-.2px}
+.page-head p{margin:3px 0 0;color:var(--muted)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;gap:10px;padding:14px 16px 0}
+.card-h h3{margin:0;font-size:14px;font-weight:700}
+.card-h .hint{color:var(--muted);font-size:12px}
+.card-b{padding:14px 16px 16px}
+
+/* ---------- KPIs ---------- */
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.kpi{padding:14px 16px}
+.kpi .lbl{color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.kpi .val{font-size:28px;font-weight:800;letter-spacing:-.5px;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .sub{color:var(--muted);font-size:12px}
+.kpi.warn .val{color:var(--h-off)}
+.kpi.amber .val{color:var(--h-risk)}
+.kpi button.link{border:0;background:none;padding:0;color:var(--brand);font-weight:600;font-size:12px}
+
+/* ---------- Goals ---------- */
+.goals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.goal{padding:16px;display:flex;gap:14px;align-items:flex-start;cursor:pointer;text-align:left;border:1px solid var(--line);transition:transform .15s,box-shadow .15s}
+.goal:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(16,24,40,.08)}
+.ring{flex:none;position:relative;width:64px;height:64px}
+.ring svg{transform:rotate(-90deg)}
+.ring .pct{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.goal .gnum{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+.goal h4{margin:2px 0 4px;font-size:14px;line-height:1.3}
+.goal .meta{color:var(--muted);font-size:12px}
+.goal .measure{color:var(--ink-2);font-size:12px;margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.grid-2{display:grid;grid-template-columns:1.25fr 1fr;gap:12px}
+.stack{display:flex;flex-direction:column;gap:12px}
+
+/* bars */
+.bar{height:8px;border-radius:8px;background:var(--line-2);overflow:hidden;display:flex}
+.bar span{display:block;height:100%}
+.bar .d{background:var(--s-done)}
+.bar .p{background:var(--s-doing);opacity:.55}
+.bar.thin{height:6px}
+
+.owner-row{display:grid;grid-template-columns:210px 1fr 54px auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line-2);cursor:pointer}
+.owner-row:first-child{border-top:0}
+.owner-row:hover .oname{color:var(--brand)}
+.oname{font-weight:700}
+.oarea{color:var(--muted);font-size:12px}
+.num{font-variant-numeric:tabular-nums;font-weight:700;text-align:right}
+.dots{display:flex;gap:4px}
+.hdot{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);font-weight:600}
+.hdot i{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+.avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:12px;flex:none}
+
+.list{display:flex;flex-direction:column}
+.li{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line-2);cursor:pointer}
+.li:first-child{border-top:0}
+.li:hover .li-t{color:var(--brand)}
+.date-chip{font-size:12px;font-weight:700;text-align:center;border-radius:8px;padding:4px 0;background:var(--surface-2);border:1px solid var(--line)}
+.date-chip.late{background:#fdecea;border-color:#f6c9c5;color:var(--h-off)}
+.date-chip.soon{background:#fff5e0;border-color:#f6dfb0;color:#9a6200}
+.li-t{font-weight:600;font-size:13px}
+.li-s{color:var(--muted);font-size:12px}
+.empty{color:var(--muted);text-align:center;padding:22px 10px;font-size:13px}
+
+/* pills */
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;border-radius:20px;padding:3px 9px;white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%}
+.h-on{background:#e3f5e9;color:#00752b}.h-on i{background:var(--h-on)}
+.h-risk{background:#fff1d9;color:#9a5d00}.h-risk i{background:var(--h-risk)}
+.h-off{background:#fde7e5;color:#b0241c}.h-off i{background:var(--h-off)}
+.h-done{background:#e0eef3;color:var(--brand)}.h-done i{background:var(--h-done)}
+.h-none{background:#eef1f1;color:#5c6a6c}.h-none i{background:var(--h-none)}
+.gchip{display:inline-flex;align-items:center;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;color:#fff}
+.gchips{display:flex;gap:4px;flex-wrap:wrap}
+
+/* ---------- Filters ---------- */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:5px 11px;font-size:12.5px;font-weight:600;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px}
+.chip:hover{border-color:#c6d0cf}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip .sw{width:8px;height:8px;border-radius:2px}
+.fsep{width:1px;height:22px;background:var(--line);margin:0 4px}
+.search{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:4px 12px;min-width:200px}
+.search input{border:0;outline:none;background:transparent;padding:2px 0;width:100%}
+.search svg{width:15px;height:15px;color:var(--muted)}
+select.fsel{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:5px 10px;font-weight:600;font-size:12.5px}
+
+/* ---------- Workstreams ---------- */
+.owner-sec{margin-bottom:26px}
+.owner-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.owner-head h3{margin:0;font-size:17px}
+.owner-head .oarea{font-size:13px}
+.owner-head .bar{width:140px}
+.ws-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.ws{padding:14px 16px;cursor:pointer;display:flex;flex-direction:column;gap:10px;transition:transform .15s,box-shadow .15s;border-left:4px solid var(--h-none)}
+.ws:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(16,24,40,.08)}
+.ws.on{border-left-color:var(--h-on)}.ws.risk{border-left-color:var(--h-risk)}.ws.off{border-left-color:var(--h-off)}.ws.done{border-left-color:var(--h-done)}
+.ws-top{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.ws h4{margin:0;font-size:14px;line-height:1.3}
+.ws .row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.ws .next{font-size:12.5px;color:var(--ink-2);display:flex;gap:6px;align-items:baseline}
+.ws .next b{white-space:nowrap}
+.ws .mdots{display:flex;gap:4px}
+.mdot{width:10px;height:10px;border-radius:50%;border:2px solid transparent}
+.ms-done{background:var(--s-done)}.ms-doing{background:var(--s-doing)}.ms-todo{background:#fff;border-color:var(--s-todo)}.ms-blocked{background:var(--s-blocked)}.ms-na{background:var(--s-na)}
+.mdot.late{box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--h-off)}
+.kpi-mini{background:var(--surface-2);border-radius:10px;padding:8px 10px;font-size:12px}
+.kpi-mini .top{display:flex;justify-content:space-between;margin-bottom:5px}
+.kpi-mini b{font-variant-numeric:tabular-nums}
+.add-card{border:1.5px dashed #cdd6d5;background:transparent;box-shadow:none;display:grid;place-items:center;color:var(--muted);font-weight:600;min-height:120px}
+.add-card:hover{border-color:var(--brand);color:var(--brand);transform:none;box-shadow:none}
+.stale{color:#9a6200}
+
+/* ---------- Timeline ---------- */
+.tl-wrap{overflow-x:auto}
+.tl{min-width:980px;position:relative}
+.tl-head{display:grid;grid-template-columns:280px 1fr;position:sticky;top:0;background:var(--surface);z-index:2;border-bottom:1px solid var(--line)}
+.tl-head .lh{padding:10px 16px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:flex-end}
+.tl-months{position:relative;height:54px}
+.tl-q{position:absolute;top:0;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--brand);letter-spacing:.5px;border-left:1px solid var(--line)}
+.tl-m{position:absolute;top:24px;height:30px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--muted);border-left:1px solid var(--line)}
+.tl-group{display:grid;grid-template-columns:280px 1fr;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.tl-group .gl{padding:8px 16px;display:flex;align-items:center;gap:10px;font-weight:700}
+.tl-group .gl small{color:var(--muted);font-weight:500}
+.tl-row{display:grid;grid-template-columns:280px 1fr;border-bottom:1px solid var(--line-2);min-height:44px}
+.tl-row:hover{background:#fafcfb}
+.tl-row .rl{padding:8px 16px;display:flex;align-items:center;gap:8px;cursor:pointer;min-width:0}
+.tl-row .rl .nm{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-row .rl:hover .nm{color:var(--brand)}
+.tl-row .rl .hd{width:8px;height:8px;border-radius:50%;flex:none}
+.tl-track{position:relative}
+.tl-grid{position:absolute;top:0;bottom:0;border-left:1px solid var(--line-2)}
+.tl-today{position:absolute;top:0;bottom:0;width:2px;background:var(--h-off);z-index:1;pointer-events:none}
+.tl-today-lbl{position:absolute;top:2px;transform:translateX(-50%);background:var(--h-off);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:5px;letter-spacing:.4px}
+.tl-span{position:absolute;top:50%;height:4px;margin-top:-2px;border-radius:4px;background:#d9e3e2}
+.tl-slip{position:absolute;top:50%;height:0;border-top:2px dashed var(--h-risk);margin-top:-1px}
+.tl-ghost{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;border:2px dashed var(--h-risk);background:transparent}
+.tl-ms{position:absolute;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;display:grid;place-items:center;font-size:9.5px;font-weight:800;color:#fff;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer;z-index:2;transition:transform .12s}
+.tl-ms:hover{transform:scale(1.18);z-index:3}
+.tl-ms.st-todo{background:#fff;color:#5c6a6c;border-color:var(--s-todo)}
+.tl-ms.st-doing{background:var(--s-doing)}
+.tl-ms.st-done{background:var(--s-done)}
+.tl-ms.st-blocked{background:var(--s-blocked)}
+.tl-ms.st-na{background:var(--s-na);color:#5c6a6c}
+.tl-ms.late{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--h-off)}
+.tl-edge{position:absolute;top:50%;margin-top:-9px;font-size:10px;font-weight:700;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:1px 5px;white-space:nowrap}
+.tl-tbd{font-size:10.5px;font-weight:700;color:var(--muted);background:var(--line-2);border-radius:5px;padding:1px 5px;flex:none}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend .mdot{width:12px;height:12px}
+
+/* ---------- Asks ---------- */
+.asks{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:12px}
+.ask-card .card-b{padding-top:10px}
+.ask-main{background:var(--brand-soft);border-radius:10px;padding:10px 12px;color:var(--ink);font-size:13px;margin-bottom:10px;white-space:pre-wrap}
+.ask-ws{display:grid;grid-template-columns:1fr;gap:2px;padding:8px 0;border-top:1px solid var(--line-2);font-size:13px}
+.ask-ws b{font-size:12px;color:var(--ink-2)}
+.ask-ws span{color:var(--ink)}
+
+/* ---------- Tooltip ---------- */
+#tip{position:fixed;z-index:100;pointer-events:none;background:#152022;color:#fff;font-size:12px;border-radius:9px;padding:8px 10px;max-width:280px;box-shadow:var(--shadow-lg);opacity:0;transition:opacity .1s}
+#tip.show{opacity:1}
+#tip b{display:block;margin-bottom:2px}
+#tip .t2{color:#b9c6c7}
+
+/* ---------- Drawer & modal ---------- */
+.scrim{position:fixed;inset:0;background:rgba(14,22,24,.38);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(640px,100%);background:var(--surface);z-index:60;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
+.drawer.open{transform:none}
+.dr-h{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.dr-h h3{margin:0;font-size:16px;flex:1}
+.dr-b{flex:1;overflow-y:auto;padding:18px 20px 30px}
+.dr-f{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;background:var(--surface-2)}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-48%) scale(.98);width:min(640px,calc(100% - 32px));max-height:calc(100% - 48px);background:var(--surface);border-radius:16px;z-index:60;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:all .18s}
+.modal.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
+.fsec{margin-bottom:20px}
+.fsec>h5{margin:0 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:700}
+.fld{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fld label{font-size:12px;font-weight:600;color:var(--ink-2)}
+.inp{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--surface);outline:none;width:100%;transition:border-color .15s,box-shadow .15s}
+.inp:focus{border-color:var(--brand-2);box-shadow:0 0 0 3px rgba(0,172,168,.15)}
+textarea.inp{resize:vertical;min-height:62px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.frow3{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.gtoggle{display:flex;gap:6px;flex-wrap:wrap}
+.gtoggle button{border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 9px;font-size:12px;font-weight:700;color:var(--muted)}
+.gtoggle button.on{color:#fff}
+.segs{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.segs button{border:0;background:none;border-radius:7px;padding:6px 10px;font-weight:600;font-size:12px;color:var(--muted)}
+.segs button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.ms-ed{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;background:var(--surface-2)}
+.ms-ed .l1{display:grid;grid-template-columns:34px 1fr 140px 130px 30px;gap:8px;align-items:center}
+.ms-ed .l2{display:grid;grid-template-columns:34px 140px 1fr;gap:8px;align-items:center;margin-top:6px}
+.ms-ed .l2 label{font-size:11px;color:var(--muted);font-weight:600}
+.ms-ed .tag{font-weight:800;font-size:12px;color:var(--muted);text-align:center}
+.ms-ed .inp{padding:6px 8px;font-size:13px}
+.ms-ed .l2 .inp{font-size:12px}
+.xbtn{border:0;background:none;color:var(--muted);width:30px;height:30px;border-radius:8px;display:grid;place-items:center}
+.xbtn:hover{background:#fde7e5;color:var(--h-off)}
+.xbtn svg{width:16px;height:16px}
+.auto-note{font-size:12px;color:var(--muted);margin-top:6px}
+.goal-ed{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.goal-ed .gh{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700}
+
+/* ---------- Toast ---------- */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#152022;color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;font-size:13px;opacity:0;transition:all .2s;z-index:120;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%)}
+
+/* ---------- Presentation ---------- */
+#present{position:fixed;inset:0;z-index:200;background:#0b1f26;color:#eaf3f3;display:none;flex-direction:column}
+#present.open{display:flex}
+.pz-top{display:flex;align-items:center;gap:12px;padding:14px 22px;color:#9fb6b8;font-size:12px;font-weight:600}
+.pz-top .spacer{flex:1}
+.pz-btn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#eaf3f3;border-radius:9px;padding:7px 12px;font-weight:600;font-size:12px}
+.pz-btn:hover{background:rgba(255,255,255,.14)}
+.pz-stage{flex:1;display:grid;place-items:center;padding:0 22px;overflow:hidden}
+.slide{width:min(1280px,100%);aspect-ratio:16/9;max-height:calc(100vh - 130px);background:linear-gradient(160deg,#0f2d38 0%,#0b2229 60%,#0a1d23 100%);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:3.2% 4%;display:flex;flex-direction:column;position:relative;overflow:hidden;font-size:clamp(11px,1.15vw,16px)}
+.slide .kicker{font-size:.78em;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-2);font-weight:800}
+.slide h2{font-size:2.1em;margin:.2em 0 .15em;letter-spacing:-.02em;line-height:1.15;color:#fff}
+.slide .lead{color:#a9c0c2;font-size:1.05em;margin:0 0 1.2em}
+.slide .foot{position:absolute;left:4%;right:4%;bottom:2.4%;display:flex;justify-content:space-between;color:#6f8b8e;font-size:.72em}
+.s-title{justify-content:center}
+.s-title h2{font-size:3.3em;max-width:80%}
+.s-title .team{margin-top:1.4em;display:flex;gap:.6em;flex-wrap:wrap}
+.s-title .team span{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:30px;padding:.35em .9em;font-weight:600}
+.s-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1em;margin-top:2em}
+.s-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:1em 1.1em}
+.s-stat .v{font-size:2.4em;font-weight:800;color:#fff;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.s-stat .l{color:#9fb6b8;font-size:.82em;font-weight:600}
+.s-goals{display:grid;grid-template-columns:repeat(3,1fr);gap:1em;flex:1;align-content:start}
+.s-goal{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1em 1.1em;display:flex;gap:1em;align-items:center}
+.s-goal h4{margin:0 0 .3em;font-size:1em;color:#fff;line-height:1.25}
+.s-goal .m{color:#9fb6b8;font-size:.8em}
+.s-goal .ring{width:4.4em;height:4.4em}
+.s-goal .ring .pct{color:#fff;font-size:1em}
+.s-table{width:100%;border-collapse:collapse;font-size:.88em}
+.s-table th{text-align:left;color:#7f9a9d;font-size:.78em;text-transform:uppercase;letter-spacing:.08em;font-weight:700;padding:.5em .6em;border-bottom:1px solid rgba(255,255,255,.12)}
+.s-table td{padding:.6em .6em;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:middle}
+.s-table td.n{font-weight:600;color:#fff}
+.s-table .bar{background:rgba(255,255,255,.1);height:.5em;width:7em}
+.s-table .sub{color:#8fa8ab;font-size:.85em}
+.s-cols{display:grid;grid-template-columns:1.6fr 1fr;gap:1.6em;flex:1;min-height:0}
+.s-box{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1em 1.2em;overflow:hidden}
+.s-box h5{margin:0 0 .6em;font-size:.78em;letter-spacing:.12em;text-transform:uppercase;color:var(--brand-2)}
+.s-box p{margin:0;color:#d6e4e5;line-height:1.5}
+.s-list{display:flex;flex-direction:column;gap:.55em}
+.s-li{display:grid;grid-template-columns:4.6em 1fr;gap:.8em;align-items:center}
+.s-li .d{font-weight:800;font-size:.85em;background:rgba(255,255,255,.08);border-radius:8px;text-align:center;padding:.3em 0}
+.s-li .d.late{background:rgba(217,52,43,.25);color:#ffb3ad}
+.s-li .t{color:#fff;font-weight:600;font-size:.92em}
+.s-li .s{color:#8fa8ab;font-size:.78em}
+.s-owner-bars{display:flex;flex-direction:column;gap:.9em}
+.s-ob{display:grid;grid-template-columns:9em 1fr 3.5em 14em;gap:1em;align-items:center}
+.s-ob .bar{height:.7em;background:rgba(255,255,255,.1)}
+.s-ob .nm{font-weight:700;color:#fff}
+.s-ob .nm small{display:block;color:#8fa8ab;font-weight:500;font-size:.75em}
+.s-ob .pc{font-weight:800;color:#fff;text-align:right;font-variant-numeric:tabular-nums}
+.slide .pill{font-size:.72em}
+.slide .h-on{background:rgba(0,160,59,.18);color:#7fe0a2}
+.slide .h-risk{background:rgba(224,138,0,.2);color:#ffc970}
+.slide .h-off{background:rgba(217,52,43,.22);color:#ffaaa3}
+.slide .h-done{background:rgba(0,172,168,.2);color:#8be7e4}
+.slide .h-none{background:rgba(255,255,255,.08);color:#a9bdbf}
+.slide .gchip{font-size:.66em}
+.pz-nav{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px}
+.pz-dots{display:flex;gap:6px}
+.pz-dots button{width:8px;height:8px;border-radius:50%;border:0;background:rgba(255,255,255,.22);padding:0}
+.pz-dots button.on{background:var(--brand-2);width:22px;border-radius:5px}
+
+/* print: deck */
+#print-root{display:none}
+@media print{
+  @page{size:A4 landscape;margin:0}
+  body>*:not(#print-root){display:none!important}
+  #print-root{display:block}
+  #print-root .slide{width:297mm;height:210mm;max-height:none;aspect-ratio:auto;border-radius:0;page-break-after:always;break-after:page;font-size:12.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1100px){
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .goals{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid-2{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .topbar-in,.tabs,main{padding-left:16px;padding-right:16px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .goals{grid-template-columns:1fr}
+  .owner-row{grid-template-columns:110px 1fr 44px}
+  .owner-row .dots{display:none}
+  .brand small{display:none}
+  .btn .lbl-hide{display:none}
+  .ms-ed .l1{grid-template-columns:28px 1fr 30px}
+  .ms-ed .l1 .inp-date,.ms-ed .l1 .inp-status{grid-column:2/3}
+  .ms-ed .l2{grid-template-columns:28px 1fr}
+  .ms-ed .l2 .inp-note{grid-column:2/3}
+  .frow,.frow3{grid-template-columns:1fr 1fr}
+  .asks{grid-template-columns:1fr}
+  .search{min-width:0;flex:1}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <div class="logo">CoE</div>
+      <div style="min-width:0"><h1 id="appTitle">Digital CoE · Priorities Hub</h1><small id="appSub">Strategic priorities &amp; delivery progress</small></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="qpick" title="Quarter">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:6px;color:var(--muted)"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <select id="qSel" aria-label="Quarter"></select>
+    </div>
+    <button class="btn primary" data-action="present"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="lbl-hide">Presentation mode</span></button>
+    <div class="menu-wrap">
+      <button class="iconbtn" data-action="menu" aria-label="More"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button>
+      <div class="menu" id="menu">
+        <button data-action="new-quarter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Start next quarter…</button>
+        <button data-action="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Goals, team &amp; settings</button>
+        <hr>
+        <button data-action="export"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Export data (JSON)</button>
+        <button data-action="import"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Import data (JSON)</button>
+        <button data-action="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Download milestones (CSV)</button>
+        <button data-action="print"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Save deck as PDF</button>
+        <hr>
+        <button data-action="reset" class="danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>Reset to Q4 2026 deck data</button>
+      </div>
+    </div>
+    <input type="file" id="fileIn" accept="application/json,.json" class="sr">
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="timeline">Timeline</button>
+    <button class="tab" data-tab="workstreams">Workstreams <span class="count" id="wsCount"></span></button>
+    <button class="tab" data-tab="asks">Asks &amp; decisions</button>
+  </nav>
+</header>
+
+<main>
+  <section class="view active" id="v-overview"></section>
+  <section class="view" id="v-timeline"></section>
+  <section class="view" id="v-workstreams"></section>
+  <section class="view" id="v-asks"></section>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Edit workstream"></aside>
+<div class="modal" id="modal" role="dialog"></div>
+<div id="tip"></div>
+<div id="toast"></div>
+
+<div id="present" aria-label="Presentation">
+  <div class="pz-top"><span id="pzTitle"></span><span class="spacer"></span><span id="pzCount"></span><button class="pz-btn" data-action="pz-print">Save as PDF</button><button class="pz-btn" data-action="pz-close">Exit (Esc)</button></div>
+  <div class="pz-stage" id="pzStage"></div>
+  <div class="pz-nav"><button class="pz-btn" data-action="pz-prev">← Prev</button><div class="pz-dots" id="pzDots"></div><button class="pz-btn" data-action="pz-next">Next →</button></div>
+</div>
+<div id="print-root"></div>
+
+<script>
+/* =====================================================================
+   CoE Priorities Hub — single-file app
+   Data lives in this browser (localStorage). Share via Export / Import.
+   ===================================================================== */
+(function(){
+'use strict';
+
+const STORE_KEY = 'coe-priorities-hub/v1';
+const USER_KEY = 'coe-priorities-hub/user';
+const DAY = 86400000;
+
+const STATUS = {
+  todo:   {label:'Not started'},
+  doing:  {label:'In progress'},
+  done:   {label:'Done'},
+  blocked:{label:'Blocked'},
+  na:     {label:'N/A'}
+};
+const HEALTH = {
+  on:  {label:'On track'},
+  risk:{label:'At risk'},
+  off: {label:'Off track'},
+  done:{label:'Complete'},
+  none:{label:'No milestones'}
+};
+const OWNER_COLORS = ['#00567a','#00a03b','#aa198d','#e08a00','#6b4fbb','#00aca8','#3c7e79','#d9342b'];
+
+/* ---------------------------- Seed data (from the Q4 2026 deck) ---------------------------- */
+function seed(){
+  const goals = [
+    {id:1, short:'Deliver', title:'Deliver enterprise assets, POCs & briefs', desc:'Ship enterprise-grade products and decision briefs that prove real business value — not demos that stall.', measure:'POCs promoted to production; value realized (hours saved / cost avoided).'},
+    {id:2, short:'Literacy', title:'Uplift enterprise & AI digital literacy', desc:'Raise digital, data and AI fluency so everyone can use enterprise tools confidently and responsibly.', measure:'Coverage, completion & competency lift; leader enablement.'},
+    {id:3, short:'Standards', title:'Deploy tools, standards, prompts & templates', desc:'Make responsible, high-quality building the default across M365 & Power Platform.', measure:'Standards published; % of environments governed (DLP / certification).'},
+    {id:4, short:'Adoption', title:'Improve adoption & reuse of digital assets', desc:'Turn investments into scale — share and replicate solutions instead of rebuilding one-off.', measure:'Adoption (MAU) and asset reuse rate; duplication avoided.'},
+    {id:5, short:'CoE Ops', title:'Set up the CoE for strategy & operations', desc:'Build the operating engine — one front door, governed build-to-hand-off, run as a measurable factory.', measure:'% of demand via the front door; live KPI dashboard.'},
+    {id:6, short:'Shape', title:'Shape the standard in your domain', desc:'Be the expert others turn to. Guide quality and trade-offs without taking over delivery, and show what AI and new ways of working make possible.', measure:'New ways of working / teams that adopted a new AI practice you introduced.'}
+  ];
+  const owners = [
+    {id:'anat', name:'Anat', area:'Product Specialists', needs:'Governance decisions from the MS workstream, IT security & EA approvals, cross-CoE alignment (Nico, Anil, Keerthi), env-strategy sign-off, PAYG / agent-builder decisions, dev starter kit and MS agent-kit config.'},
+    {id:'anil', name:'Anil', area:'Platform & Compliance', needs:'A funded Purview technical owner, a CI/CD plan with the Dev team, an oversharing follow-through plan, stakeholder management for the AMS transfer, Exostar kickoff and a CoE sub-process.'},
+    {id:'nico', name:'Nico', area:'Adoption & Enablement', needs:'Cowork financial decision and signed MS contract, agreed maker thresholds for Tracy\'s leadership, Flexera access for adoption data, SoW signature and confirmed Q4 outcomes.'},
+    {id:'tamar', name:'Tamar', area:'Products & Delivery', needs:'A reuse prioritisation call, POD recruitment approval, AOP 2027 budget sign-off and a final Product Owner selection.'},
+    {id:'eli', name:'Eli', area:'AI Workforce', needs:'UAT by 11 Oct, Phase 3 scope and data access. BO/TO mapping ownership and email instructions. Post-launch GenAI monitoring. Endorse the 2027 playbook and align roadmaps. Prioritize agents with owners, oversight and KPIs. Agree outcome metrics and owners. Prioritize use cases and build a shared asset library. Expand the CoE mandate.'},
+    {id:'duncan', name:'Duncan', area:'AI@Teva Program', needs:'Confirm channels and approvals, security and testing, learner data and support, governance remit and Responsible AI participation, KPI baselines and value owners, contract and invoice resolution, 2027 funding and handover.'}
+  ];
+  const W = [];
+  let n = 0;
+  function ws(owner, name, goals, stands, needs, success, ms){
+    W.push({id:'ws'+(++n), owner, name, goals, stands, needs, success, health:'auto',
+      kpi:{label:'',unit:'',baseline:'',current:'',target:''},
+      milestones: ms.map((m,i)=>({id:'m'+n+'_'+i, name:m[0], baseline:m[1]||'', date:m[2]===undefined?(m[1]||''):m[2], status:m[3]||'todo', note:m[4]||''})),
+      updatedAt:'2026-10-30', updatedBy:'Q4 deck'});
+  }
+  /* --- Anil --- */
+  ws('anil','E5 / Purview: records & legal hold',[2,3],'Kickoff held with Microsoft and ISD.','A technical owner.','Named technical owner and agreed Purview stakeholder map.',[
+    ['Purview discovery with Microsoft','2026-10-20','2026-10-20','doing','Data collection'],
+    ['Training workshop','2026-11-20','2026-11-20','todo'],
+    ['Define owner & stakeholder map','2026-10-26','2026-10-26','doing','Review with MS']]);
+  ws('anil','CI/CD pipelines',[1,3],'Planning for CI/CD.','Plan with the Dev team.','Tested CI/CD pipelines ready for full production.',[
+    ['Onboard runner with repository','2026-10-20','2026-10-20','doing'],
+    ['Pilot GitHub Actions in production','2026-11-20','2026-11-20','todo'],
+    ['Final testing for full production','2026-12-25','2026-12-25','todo']]);
+  ws('anil','SPO oversharing risk',[3],'Mitigation session run with security.','A follow-through plan.','SPO ownership and permission controls defined.',[
+    ['Define SPO owner verification process','2026-11-26','2026-11-26','todo'],
+    ['Investigate restricted permissions','2026-12-23','2026-12-23','todo'],
+    ['Classify unclassified sites as confidential','2026-10-28','2026-10-28','todo','Source text truncated ("confi..") — confirm']]);
+  ws('anil','SharePoint KT, operations & AMS transfer',[2,5],'KT is initiated.','Stakeholder management.','Agreed operating model and AMS handover plan.',[
+    ['KT with Valentine & shadowing','2026-10-27','2026-10-27','done'],
+    ['Operating model','2026-11-12','2026-11-12','doing'],
+    ['AMS list & handover plan','2026-11-29','2026-11-29','todo']]);
+  ws('anil','Exostar',[1,3,4],'SOW signed; supplier setup with Juraj.','Kickoff deck.','Pilot users onboarded and Exostar in production.',[
+    ['Platform testing','2026-10-29','2026-10-29','doing'],
+    ['Onboard pilot users','2026-11-10','2026-11-10','todo'],
+    ['Production','2026-12-17','2026-12-17','todo']]);
+  ws('anil','Agent Toolkit for Copilot Studio',[3,5],'Setup with MS + governance.','Built the platform.','Security-assessed toolkit with tested pipeline and governance.',[
+    ['Security assessment with Omer','2026-10-25','2026-10-25','todo'],
+    ['Test pipeline (Anil + Anat teams)','2026-11-26','2026-11-26','todo'],
+    ['Final setup & governance','2026-11-30','2026-11-30','todo']]);
+  ws('anil','Evergreen process & prioritization',[5],'Sub-process for CoE.','Kickoff.','Leadership-aligned priorities and an active Planner cadence.',[
+    ['Present plan to leadership team','2026-10-20','2026-10-20','todo'],
+    ['Set up Planner flow','2026-10-29','2026-10-29','doing','Testing'],
+    ['Start operating cadence with participants','2026-11-10','2026-11-10','todo']]);
+  /* --- Tamar --- */
+  ws('tamar','What to use when',[1,2,4],'Development; Phase 2 prioritization.','Stakeholder and end-user feedback to make sure we meet the actual need.','Phase 1 ready for production with user feedback and Phase 2 priorities agreed.',[
+    ['User feedback & validation session','2026-11-03'],['UAT','2026-11-17'],['Prod deployment','2026-11-25'],['Silent go-live','2026-12-02'],['Public go-live','2026-12-08']]);
+  ws('tamar','Ask capabilities playbook',[2,3,6],'Discovery.','Complete discovery for self-productivity and democratization; sync with Anat\'s team plan and Mojo\'s team.','Playbooks cover self-productivity, democratization and custom solutions.',[
+    ['Playbook: self-productivity & democratization','2026-12-15'],
+    ['Playbook: custom solutions','2027-02-15','2027-02-15','todo','Deck says 15 Feb 2026 — confirm year']]);
+  ws('tamar','Copilot Studio – Mojo integration',[1,4],'Planned for Q1 2027.','Architecture design for two-way integration; alignment with Mojo\'s team on feasibility and timelines.','Copilot Studio agents and agreed capabilities available in Mojo.',[
+    ['Copilot Studio agents published in Mojo','2027-01-30'],
+    ['Copilot Studio agents published in Mojo (wave 2)','2027-03-30'],
+    ['Mojo capabilities built in Copilot Studio (e.g. Web Search)','2027-03-30']]);
+  ws('tamar','Delivery POD (2 developers + QA)',[1],'','POD recruitment approval.','',[]);
+  ws('tamar','Budget & commercials (OPEX, PTU, POs)',[5],'','AOP 2027 budget sign-off.','',[]);
+  /* --- Nico --- */
+  ws('nico','Cowork implementation plan',[1,2,4],'Pioneers pilot (100 seats) launched 5 Oct, applications open; Carmel trainings confirmed; GO Plus T&Cs (1M credits) awaiting signature.','Financial decision + GO Plus / contract signed with MS.','100-seat pilot delivers evidence for a scale decision.',[
+    ['Sign GO Plus Cowork T&Cs / updated contract','','','todo','Owner: Ellah — date TBD'],
+    ['Pioneers assignment, pilot kick-off & Carmel trainings','2026-10-23','2026-10-23','done'],
+    ['Week-8 gate: value review & scale decision','2026-12-18']]);
+  ws('nico','Makers adoption plan for Power Platform',[2,3,4],'Adoption plan due EOW; Phase 1 HLD in review (13 & 15 Oct); draft of Makers Learning Passport.','Agreed thresholds (sharing, complexity, integrations, maker classification) for Tracy\'s leadership; Security sign-off on HLD.','Makers onboarded under agreed thresholds and approved HLD.',[
+    ['Adoption plan final; HLD','2026-10-16','2026-10-16','doing','Presentation this week'],
+    ['Thresholds agreed with Tracy\'s leadership','2026-10-30','2026-10-30','doing','Ellah plans a workshop with Avi'],
+    ['Makers onboarding & enablement','2026-12-11']]);
+  ws('nico','WoW: Viva Insights support',[1,6],'WoW workshop prep.','Confirm workshop outcome and licence decision for Advanced Analysis.','Tested Viva Insights inform WoW meeting effectiveness.',[
+    ['Confirm workshop outcome with WoW','2026-10-16','2026-10-16','doing','WS 1 this week'],
+    ['Advanced Viva Insights tested (incl. licence check)','2026-11-20'],
+    ['Meeting-effectiveness insights shared with WoW','2026-12-11']]);
+  ws('nico','Agent Builder adoption',[3,4],'500+ agents since July pilot; Wave 2 open; basic governance (block unowned/unused agents) not working — #1 open item with MS.','MS fix for governance controls (ALM session 15 Oct).','Working governance controls and automated Wave 2 onboarding.',[
+    ['Governance controls confirmed with Microsoft','2026-10-30','2026-10-30','todo','With Anat'],
+    ['Wave 2 (~500) onboarded','2026-10-22','2026-10-22','doing','Onboarding this week'],
+    ['Automated onboarding live','2027-02-01','2027-02-01','todo','Deck says 1 Feb 2026 — confirm year']]);
+  ws('nico','Copilot Waves (8-week cohorts)',[2,4],'Flexera intro held 22 Sep; user-level data pending GDPR clearance to build target-specific adoption scenarios.','Access to Flexera (M365 FinOps & usage) incl. privacy approval for user-level data.','First cohort launched using privacy-cleared adoption data.',[
+    ['Flexera access granted (GDPR cleared)','2026-10-30','2026-10-30','todo','Date to confirm with Orr'],
+    ['User segments & target scenarios defined','2026-11-13','2026-11-13','todo','Date to confirm with Orr'],
+    ['First 8-week cohort launched','2026-11-23','2026-11-23','todo','Date to confirm with Orr']]);
+  ws('nico','Executive AI Enablement Program',[2],'Pragmatic Works SOW received (100 coaching hrs, 3-month target); vendor paperwork & PO open.','SOW signature + vendor onboarding / PO.','Signed SOW and executive coaching underway.',[
+    ['SOW review & vendor / PO paperwork done','2026-10-23','2026-10-23','todo','Date to confirm with Orr'],
+    ['SOW signed with Pragmatic Works','2026-10-30','2026-10-30','todo','Date to confirm with Orr'],
+    ['Pre-engagement call; coaching kicks off','2026-11-16','2026-11-16','todo','Date to confirm with Orr']]);
+  ws('nico','AI @ Teva support',[2,4,5],'Accenture community strategy shared; Champion strategy session 15 Oct; Leadership workshops 26 & 29 Oct.','Decision on community platform (Viva Engage vs. Teams) and business owner.','Agreed community platform, owner and champion direction.',[
+    ['Accenture Copilot Champion strategy session','2026-10-15','2026-10-15','done','Introduced the communities to Accenture'],
+    ['AI@Teva leadership strategy workshop','2026-10-29'],
+    ['Next milestone','','','todo','Not specified yet']]);
+  /* --- Anat --- */
+  ws('anat','Agentic governance',[3,5],'Agent Builder sharing limit about to expire; MS governance WS in progress; SP agent.','Governance decisions following WS, SP agent governance info, CS Agent kit.','Agreed governance for agent sharing + rollout.',[
+    ['Agent Builder','2026-11-15','2026-11-15','doing'],
+    ['SP agents (if applicable)','2026-12-15','2026-12-15','na'],
+    ['Copilot Studio for democratization','2027-02-28']]);
+  ws('anat','Power Platform democratization',[3,4],'Agreed on env strategy, architecture, R&R, onboarding, connectors, FinOps.','Cross-CoE alignment, IT sec & EA confirmation; Nico: tier criteria & adoption plan; Anil: infra.','Approved maker access and onboarding.',[
+    ['Power Apps + Power Automate for makers','2026-12-15','2026-12-15','doing'],
+    ['Copilot Studio for makers','2027-03-15'],
+    ['Additional capabilities incl. PAD','2027-05-15','2027-06-15','todo']]);
+  ws('anat','Power Platform advanced capabilities',[3,6],'Capabilities list; CS new experience + Plans enabled; GitHub MCP test in progress.','Prioritize with Ronen & Nico; Dev starter kit.','Prioritized capabilities tested and ready for developers.',[
+    ['GHCP MCP for Power Platform','2026-10-30','2026-10-30','done'],
+    ['Code Apps','2026-11-15','2026-11-15','doing'],
+    ['Additional skills and MCPs','2026-12-01','2026-12-01','doing']]);
+  ws('anat','Reusable components',[1,3,4],'Aligned on ALM & implementation priorities; some components in progress.','Cross-CoE alignment with Keerthi; FinOps, ALM & publication decisions.','Shared components published with agreed ALM.',[
+    ['Brand skills','2026-10-20','2026-10-23','doing','Testing'],
+    ['Doc Diff agent','2026-11-30','2026-11-30','na'],
+    ['HTML dashboard','2026-11-30','2026-11-30','doing','Testing']]);
+  ws('anat','POCs (Ask FI, What/When, AskX)',[1],'Ask FI, What/When, AskX for SP in progress.','VNET & Genie integration guidance.','PoC evidence supports integration decisions.',[
+    ['VNET PoC','2026-11-15','2026-11-15','doing'],
+    ['Mojo / Foundry PoC','2027-02-15'],
+    ['Custom connector PoC','2026-12-15']]);
+  ws('anat','FinOps',[3,5],'Enabled at environment level.','CS Agent kit to enable FinOps at agent level.','Cost visibility at environment and agent levels.',[
+    ['GHCP','2026-10-30','2026-10-30','doing'],
+    ['Copilot','2026-11-15'],
+    ['Copilot Studio (agent-kit dependent)','2026-11-30']]);
+  ws('anat','Copilot new capabilities',[3,4],'Cowork, SP agent, AI in SP, Agent Builder enhancements, etc.','IT security, governance (#1), open Agent Builder for all / PAYG decisions.','Approved capabilities available to intended users.',[
+    ['Cowork','2026-10-19','2026-10-25','doing'],
+    ['SP agents','2026-10-30','2026-10-30','doing'],
+    ['Copilot in SP','2026-11-30']]);
+  ws('anat','PP foundations: envs, agent kit, VNET',[3,5],'Env strategy agreed; agent kit sessions with Ricardo; VNET integration testing in progress.','Present env strategy to DF, IT sec approvals, MS agent-kit config.','Approved env strategy and tested kit, VNET and CI/CD.',[
+    ['Agent kit','','','todo','Date TBD'],
+    ['New environment strategy plan','2026-10-30'],
+    ['CI/CD pilot','','','todo','Date TBD']]);
+  /* --- Eli --- */
+  ws('eli','Digitizing Teva KPIs',[1,5],'Phases 1–2 UAT completed, ready for sign-off; all 36 feedback items closed. Phase 3 being defined around AI workforce value and Viva Insights.','Formalize Phase 1–2 sign-off; finalize Phase 3 KPIs; secure Viva Insights privacy/data access approval; confirm technical delivery path and budget.','Live KPI dashboard; Phase 3 in build.',[
+    ['Complete Phases 1–2','2026-10-30','2026-10-30','done'],
+    ['Locked Phase 3 requirements','2026-10-26','2026-11-05','doing'],
+    ['Launch Phases 1–3','2027-02-08']]);
+  ws('eli','Tech stack & AI portfolio (heat map)',[1,4,5],'Heat map launched; team data validation underway.','Complete and sign off tool data by 5 Nov.','Clear portfolio investment and consolidation decisions.',[
+    ['Finalize portfolio tool and email instructions','2026-10-14','2026-10-14','done'],
+    ['Teams completed the Excel portfolio','2026-10-29','2026-11-05','doing'],
+    ['Launch the portfolio tool','2026-12-01']]);
+  ws('eli','GenAI governance',[3,5],'Public GenAI restrictions live (blocked 3 Oct); post-launch governance and monitoring underway.','Finalize governance processes, align stakeholders, ongoing monitoring/reporting.','Governed GenAI access.',[
+    ['Grey-list blocking live','2026-10-03','2026-10-03','done'],
+    ['Evaluate site blocking','2026-10-14','2026-10-14','done'],
+    ['Ongoing monitoring of blocked sites','2026-12-31','2026-12-31','doing']]);
+  ws('eli','Agentic workforce strategy',[5,6],'Vision taking shape in Digital CoE.','Endorse the 2027 playbook and align roadmaps.','Agreed vision and operating direction.',[
+    ['Align vision and operating model','2026-11-01','2026-11-09','doing'],
+    ['Endorse the 2027 playbook (V1)','2026-11-30'],
+    ['Agree on a roadmap','2026-12-31']]);
+  ws('eli','Shift AI from tools to workforce',[1,5,6],'Broad AI adoption, but limited business-owned agents delivering measurable value.','Prioritize and scale business-owned AI agents with clear accountability, governance, KPIs and value realization.','Agents delivering measurable work.',[
+    ['Approve agent pilots, owners and KPIs','2026-11-15','2026-11-15','doing'],
+    ['Launch production pilots with oversight','2026-12-31'],
+    ['Validate outcomes and decide on scale','2027-02-01']]);
+  ws('eli','AI value & ROI (AI @ Teva support)',[1,5],'Measurement framework drafted with Accenture.','Agree outcome metrics and owners.','Agreed ROI framework.',[
+    ['Agree outcome metrics and owners','2026-10-30','2026-10-30','doing'],
+    ['Build baseline instruments and reporting','2026-11-30','2026-11-30','doing'],
+    ['Approve ROI framework and value reporting','2026-12-31','2026-12-31','doing']]);
+  ws('eli','Reusable AI assets (A Day in a Life)',[1,4],'Concept aligned with Digital Workforce CoE.','Prioritize use cases and build a shared asset library.','Reusable assets with proven value.',[
+    ['Prioritize role-based assets and owners','2026-10-30','2026-10-30','doing'],
+    ['Publish shared library and pilot assets','2026-11-30'],
+    ['Validate reuse and value before scaling','2026-12-31']]);
+  ws('eli','Expand AI beyond productivity',[1,5,6],'Focus on workplace productivity; no structured expansion yet.','Expand the Digital Workforce CoE mandate.','Measurable AI impact in core functions.',[
+    ['Agree expanded CoE mandate and sponsors','2026-10-30'],
+    ['Prioritize R&D and core business use cases','2026-11-30'],
+    ['Approve pilot scope, owners and KPIs','2026-12-31']]);
+  /* --- Duncan --- */
+  ws('duncan','WS1: Change, communications & adoption',[2,4],'Channel placements, launch timing and the approval path remain open.','Confirm channels and approvals. Align communications with learning. Agree the activation support model for 2027.','Approved communications and support model for learning and community activation.',[
+    ['Learning launch alignment','2026-12-02','2026-12-02','todo','Planned'],
+    ['Maker community activation','','','todo','Q1 2027'],
+    ['Global AI Symposium','','','todo','Q3 2027']]);
+  ws('duncan','WS2: Practical AI challenges tool',[1,3],'Security clearance, sign-in and integration testing remain open. Short testing window.','Confirm platform architecture and suite name. Complete security and integration checks, user testing and restricted-information guidance.','Security-cleared platform with completed user testing and a Go/No-Go decision.',[
+    ['Security feedback','2026-10-13'],
+    ['User testing','2026-11-23','2026-11-23','todo','Planned 23–25 Nov'],
+    ['Go / No-Go','2026-11-30','2026-11-30','todo','Planned']]);
+  ws('duncan','WS3: Learning, cohorts & champion network',[2,4],'Learner groups, subject experts, manager mapping and champion capacity need confirmation.','Close learner-data dependencies. Confirm learning groups, learner support and community support beyond December.','Confirmed learner groups and champions ready to support employee learning.',[
+    ['Licence data / manager mapping','2026-10-23'],
+    ['Content freeze','2026-11-20','2026-11-20','todo','Planned'],
+    ['Champion readiness / employee learning','2027-02-08','2027-02-08','todo','Planned']]);
+  ws('duncan','WS4: Governance & stakeholder engagement',[3,5],'Leadership interviews on track. Membership, decision rights and escalation routes remain open.','Approve governance membership and remit. Confirm Responsible AI participation and align with related programmes.','Agreed governance membership, decision rights and sponsor reviews.',[
+    ['Executive workshops','2026-10-29','2026-10-29','todo','26 & 29 Oct'],
+    ['Workshop sign-off','2026-11-02'],
+    ['Quarterly sponsor reviews','','','todo','From Jan 2027']]);
+  ws('duncan','WS5: Measurement, value & KPIs',[1,5],'Baseline dates, targets, business-value owners and sentiment measures remain open.','Agree baselines and targets. Assign value owners. Define the dashboard, learning records and operational KPI pilots.','Agreed baselines and targets with named value owners and KPI reporting.',[
+    ['Baselines and targets','','','todo','Date to confirm'],
+    ['KPI checkpoints','','','todo','Monthly'],
+    ['Impact case studies','','','todo','Date to confirm']]);
+  ws('duncan','WS6: Programme administration & delivery',[5],'Contract, invoice and funding questions remain open. PMO controls and acceptance criteria need agreement.','Sign the delivery contract. Resolve fee and invoice discrepancies. Confirm 2027 funding, control logs and transition arrangements.','Signed contract, agreed funding and delivery controls with a clear handover.',[
+    ['First monthly status','2026-10-15','2026-10-15','todo','Around 15 Oct'],
+    ['Delivery contract effective','2026-10-31','2026-10-31','todo','Before Nov'],
+    ['Activation handover','2026-12-20','2026-12-20','todo','Late Dec or extension — decision pending']]);
+
+  return {version:1, title:'Digital CoE · Priorities Hub', subtitle:'Strategic priorities & delivery progress', year:2026, goals, currentQuarter:'2026-Q4',
+    quarters:{'2026-Q4':{owners, workstreams:W}}};
+}
+
+/* ---------------------------- State & persistence ---------------------------- */
+let state = load();
+let ui = {tab:'overview', owner:'all', goal:0, health:'all', q:'', pzIndex:0, editing:null};
+
+function load(){
+  try{ const raw = localStorage.getItem(STORE_KEY); if(raw){ const s = JSON.parse(raw); if(s && s.quarters) return s; } }catch(e){}
+  return seed();
+}
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){ toast('Could not save in this browser — use Export to keep a copy'); }
+}
+function Q(){ return state.quarters[state.currentQuarter]; }
+function owners(){ return Q().owners; }
+function wsAll(){ return Q().workstreams; }
+function ownerById(id){ return owners().find(o=>o.id===id) || {id, name:'Unassigned', area:'', needs:''}; }
+function ownerColor(id){ const i = owners().findIndex(o=>o.id===id); return OWNER_COLORS[(i<0?0:i) % OWNER_COLORS.length]; }
+function goalById(id){ return state.goals.find(g=>g.id===id); }
+function uid(p){ return p + Math.random().toString(36).slice(2,9); }
+function userName(){ try{ return localStorage.getItem(USER_KEY)||''; }catch(e){ return ''; } }
+function setUserName(n){ try{ localStorage.setItem(USER_KEY,n); }catch(e){} }
+
+/* ---------------------------- Dates ---------------------------- */
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function today(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
+function parseD(s){ if(!s) return null; const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); }
+function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function qInfo(key){ const [y,q] = key.split('-Q').map(Number); const start = new Date(y,(q-1)*3,1); const end = new Date(y,(q-1)*3+3,1); return {y,q,start,end,label:'Q'+q+' '+y}; }
+function nextQKey(key){ const {y,q} = qInfo(key); return q===4 ? (y+1)+'-Q1' : y+'-Q'+(q+1); }
+function fmtD(s, withYear){ const d = parseD(s); if(!d) return ''; const sameY = d.getFullYear() === qInfo(state.currentQuarter).y; return d.getDate()+' '+MONTHS[d.getMonth()]+((withYear || !sameY)?' '+d.getFullYear():''); }
+function fmtShort(s){ const d = parseD(s); if(!d) return 'TBD'; return d.getDate()+' '+MONTHS[d.getMonth()]; }
+function daysFrom(s){ const d = parseD(s); if(!d) return null; return Math.round((d - today())/DAY); }
+function relUpdated(s){ if(!s) return 'never'; const n = -daysFrom(s); if(n<=0) return 'today'; if(n===1) return 'yesterday'; if(n<30) return n+' days ago'; return fmtD(s,true); }
+
+/* ---------------------------- Derived metrics ---------------------------- */
+function msLate(m){ return m.date && m.status!=='done' && m.status!=='na' && daysFrom(m.date) < 0; }
+function wsStats(w){
+  const ms = w.milestones.filter(m=>m.status!=='na');
+  const total = ms.length, done = ms.filter(m=>m.status==='done').length, doing = ms.filter(m=>m.status==='doing').length;
+  const blocked = ms.filter(m=>m.status==='blocked').length;
+  const late = ms.filter(msLate);
+  const maxLate = late.reduce((a,m)=>Math.max(a,-daysFrom(m.date)),0);
+  const open = ms.filter(m=>m.status!=='done').sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));
+  return {total, done, doing, blocked, late:late.length, maxLate, next:open[0]||null, progress: total? done/total : 0};
+}
+function autoHealth(w){
+  const s = wsStats(w);
+  if(!s.total) return 'none';
+  if(s.done===s.total) return 'done';
+  if(s.blocked || s.late>=2 || s.maxLate>21) return 'off';
+  if(s.late) return 'risk';
+  return 'on';
+}
+function health(w){ return (w.health && w.health!=='auto') ? w.health : autoHealth(w); }
+function rollup(list){
+  let total=0,done=0,doing=0,late=0; const h={on:0,risk:0,off:0,done:0,none:0};
+  list.forEach(w=>{ const s = wsStats(w); total+=s.total; done+=s.done; doing+=s.doing; late+=s.late; h[health(w)]++; });
+  return {total,done,doing,late,h,count:list.length, progress: total? done/total : 0};
+}
+function kpiPct(k){
+  if(!k || k.target==='' || k.current==='') return null;
+  const b = Number(k.baseline||0), c = Number(k.current), t = Number(k.target);
+  if(isNaN(c)||isNaN(t)||t===b) return null;
+  return Math.max(0, Math.min(1, (c-b)/(t-b)));
+}
+function allMilestones(list){
+  const out = [];
+  (list||wsAll()).forEach(w=>w.milestones.forEach((m,i)=>out.push({m,w,i})));
+  return out;
+}
+function filtered(){
+  const q = ui.q.trim().toLowerCase();
+  return wsAll().filter(w=>{
+    if(ui.owner!=='all' && w.owner!==ui.owner) return false;
+    if(ui.goal && !w.goals.includes(ui.goal)) return false;
+    if(ui.health!=='all' && health(w)!==ui.health) return false;
+    if(q){ const hay = (w.name+' '+w.stands+' '+w.needs+' '+w.success+' '+ownerById(w.owner).name+' '+w.milestones.map(m=>m.name+' '+m.note).join(' ')).toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+}
+
+/* ---------------------------- HTML helpers ---------------------------- */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function pct(x){ return Math.round(x*100)+'%'; }
+function hPill(h){ return `<span class="pill h-${h}"><i></i>${HEALTH[h].label}</span>`; }
+function gChip(id){ const g = goalById(id); if(!g) return ''; return `<span class="gchip" style="background:var(--g${id})" data-tip="G${id} · ${esc(g.title)}">G${id}</span>`; }
+function gChips(ids){ return `<span class="gchips">${ids.slice().sort().map(gChip).join('')}</span>`; }
+function bar(r, cls){ const d = r.total? r.done/r.total*100:0, p = r.total? r.doing/r.total*100:0; return `<div class="bar ${cls||''}"><span class="d" style="width:${d}%"></span><span class="p" style="width:${p}%"></span></div>`; }
+function ring(p, color, size, stroke, track){
+  size=size||64; stroke=stroke||7; const r=(size-stroke)/2, c=2*Math.PI*r;
+  return `<div class="ring" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${track||'var(--line-2)'}" stroke-width="${stroke}"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p)}"/></svg><div class="pct">${Math.round(p*100)}%</div></div>`;
+}
+function avatar(o, size){ return `<span class="avatar" style="background:${ownerColor(o.id)};${size?`width:${size}px;height:${size}px`:''}">${esc((o.name||'?').slice(0,2).toUpperCase())}</span>`; }
+function msTip(m,w,i){ const st = STATUS[m.status].label + (msLate(m)?' · overdue':''); const slip = (m.baseline && m.date && m.baseline!==m.date) ? `<br><span class="t2">Moved from ${fmtShort(m.baseline)}</span>`:''; return `<b>M${i+1}: ${esc(m.name)}</b><span class="t2">${esc(w.name)}</span><br>${m.date?fmtD(m.date,true):'Date TBD'} · ${st}${slip}${m.note?`<br><span class="t2">${esc(m.note)}</span>`:''}`; }
+const ICON_SEARCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+const ICON_TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>';
+
+/* ---------------------------- Render: header ---------------------------- */
+function renderHeader(){
+  document.getElementById('appTitle').textContent = state.title;
+  document.getElementById('appSub').textContent = state.subtitle + ' · ' + qInfo(state.currentQuarter).label;
+  const sel = document.getElementById('qSel');
+  sel.innerHTML = Object.keys(state.quarters).sort().map(k=>`<option value="${k}" ${k===state.currentQuarter?'selected':''}>${qInfo(k).label}</option>`).join('');
+  document.getElementById('wsCount').textContent = wsAll().length;
+}
+
+/* ---------------------------- Render: overview ---------------------------- */
+function soonList(days){ days=days||14; return allMilestones().filter(x=>{ const d = daysFrom(x.m.date); return x.m.date && x.m.status!=='done' && x.m.status!=='na' && d>=0 && d<=days; }).sort((a,b)=>a.m.date.localeCompare(b.m.date)); }
+function lateList(){ return allMilestones().filter(x=>msLate(x.m)).sort((a,b)=>a.m.date.localeCompare(b.m.date)); }
+function goalRollup(gid){ return rollup(wsAll().filter(w=>w.goals.includes(gid))); }
+
+function msLi(x, dark){
+  const late = msLate(x.m), d = daysFrom(x.m.date);
+  const o = ownerById(x.w.owner);
+  const sub = late ? `${-d} day${-d===1?'':'s'} overdue · ${STATUS[x.m.status].label}` : (d===0?'Today':'In '+d+' day'+(d===1?'':'s'));
+  if(dark) return `<div class="s-li"><div class="d ${late?'late':''}">${fmtShort(x.m.date)}</div><div><div class="t">${esc(x.m.name)}</div><div class="s">${esc(o.name)} · ${esc(x.w.name)} · ${sub}</div></div></div>`;
+  return `<div class="li" data-action="edit-ws" data-id="${x.w.id}"><div class="date-chip ${late?'late':(d<=7?'soon':'')}">${fmtShort(x.m.date)}</div><div style="min-width:0"><div class="li-t">${esc(x.m.name)}</div><div class="li-s">${esc(o.name)} · ${esc(x.w.name)}</div></div><div class="li-s" style="text-align:right;white-space:nowrap">${sub}</div></div>`;
+}
+
+function renderOverview(){
+  const all = wsAll(); const R = rollup(all);
+  const late = lateList(), soon = soonList(14);
+  const qi = qInfo(state.currentQuarter);
+  const remaining = Math.max(0, Math.ceil((qi.end - today())/DAY));
+  const atRisk = R.h.risk + R.h.off;
+  const el = document.getElementById('v-overview');
+  el.innerHTML = `
+    <div class="page-head"><div><h2>${qi.label} at a glance</h2><p>${all.length} workstreams across ${owners().length} owners, tracked against the six CoE goals. ${remaining? remaining+' days left in the quarter.':'Quarter closed.'}</p></div></div>
+    <div class="kpis">
+      <div class="card kpi"><div class="lbl">Overall progress</div><div class="val">${pct(R.progress)}</div><div class="sub">${R.done} of ${R.total} milestones done</div></div>
+      <div class="card kpi"><div class="lbl">In progress</div><div class="val">${R.doing}</div><div class="sub">milestones being worked on</div></div>
+      <div class="card kpi amber"><div class="lbl">Due in next 14 days</div><div class="val">${soon.length}</div><div class="sub">open milestones</div></div>
+      <div class="card kpi ${late.length?'warn':''}"><div class="lbl">Overdue / needs update</div><div class="val">${late.length}</div><div class="sub">past target date, not done</div></div>
+      <div class="card kpi ${atRisk?'amber':''}"><div class="lbl">Workstreams at risk</div><div class="val">${atRisk}</div><div class="sub"><button class="link" data-action="filter-health" data-h="risk">${R.h.risk} at risk</button> · <button class="link" data-action="filter-health" data-h="off">${R.h.off} off track</button></div></div>
+    </div>
+    <div class="page-head" style="margin-bottom:12px"><div><h2 style="font-size:16px">Progress toward the six goals</h2><p>Share of milestones completed across every workstream tagged to the goal. Select a goal to see its workstreams.</p></div></div>
+    <div class="goals">${state.goals.map(g=>{ const r = goalRollup(g.id); return `
+      <button class="card goal" data-action="goal" data-g="${g.id}">
+        ${ring(r.progress,'var(--g'+g.id+')')}
+        <div style="min-width:0"><div class="gnum" style="color:var(--g${g.id})">Goal ${g.id}</div><h4>${esc(g.title)}</h4>
+        <div class="meta">${r.count} workstreams · ${r.done}/${r.total} milestones${r.late?` · <span style="color:var(--h-off);font-weight:600">${r.late} overdue</span>`:''}</div>
+        <div class="measure"><b>Measure:</b> ${esc(g.measure)}</div></div>
+      </button>`; }).join('')}</div>
+    <div class="grid-2">
+      <div class="card"><div class="card-h"><h3>Team progress</h3><span class="hint">milestones done · workstream health</span></div><div class="card-b">
+        ${owners().map(o=>{ const list = all.filter(w=>w.owner===o.id); const r = rollup(list); return `
+          <div class="owner-row" data-action="owner" data-o="${o.id}">
+            <div style="display:flex;gap:10px;align-items:center;min-width:0">${avatar(o)}<div style="min-width:0"><div class="oname">${esc(o.name)}</div><div class="oarea">${esc(o.area)}</div></div></div>
+            ${bar(r)}
+            <div class="num">${pct(r.progress)}</div>
+            <div class="dots">${['on','risk','off','done'].filter(h=>r.h[h]).map(h=>`<span class="hdot" data-tip="${r.h[h]} ${HEALTH[h].label.toLowerCase()}"><i style="background:var(--h-${h})"></i>${r.h[h]}</span>`).join('')}</div>
+          </div>`; }).join('')}
+        <div class="legend" style="margin-top:12px"><span><i class="mdot ms-done"></i>Done</span><span><i class="mdot ms-doing" style="opacity:.55"></i>In progress</span><span><i class="hdot"><i style="background:var(--h-on)"></i></i>On track</span><span><i class="hdot"><i style="background:var(--h-risk)"></i></i>At risk</span><span><i class="hdot"><i style="background:var(--h-off)"></i></i>Off track</span></div>
+      </div></div>
+      <div class="stack">
+        <div class="card"><div class="card-h"><h3>Needs attention</h3><span class="hint">past target date and not marked done</span></div><div class="card-b"><div class="list">
+          ${late.length? late.slice(0,7).map(x=>msLi(x)).join('') : '<div class="empty">Nothing overdue. 🎉</div>'}
+          ${late.length>7?`<div class="li-s" style="padding-top:8px">+ ${late.length-7} more. Filter the Workstreams tab by "Off track" or "At risk" to see them.</div>`:''}
+        </div></div></div>
+        <div class="card"><div class="card-h"><h3>Coming up</h3><span class="hint">next 14 days</span></div><div class="card-b"><div class="list">
+          ${soon.length? soon.slice(0,7).map(x=>msLi(x)).join('') : '<div class="empty">No milestones due in the next two weeks.</div>'}
+        </div></div></div>
+      </div>
+    </div>`;
+}
+
+/* ---------------------------- Filters ---------------------------- */
+function renderFilters(){
+  return `<div class="filters">
+    <div class="search">${ICON_SEARCH}<input id="fSearch" placeholder="Search workstreams, milestones…" value="${esc(ui.q)}"></div>
+    <span class="fsep"></span>
+    <button class="chip ${ui.owner==='all'?'on':''}" data-action="f-owner" data-o="all">All owners</button>
+    ${owners().map(o=>`<button class="chip ${ui.owner===o.id?'on':''}" data-action="f-owner" data-o="${o.id}"><span class="sw" style="background:${ownerColor(o.id)};border-radius:50%"></span>${esc(o.name)}</button>`).join('')}
+    <span class="fsep"></span>
+    <select class="fsel" id="fGoal"><option value="0">All goals</option>${state.goals.map(g=>`<option value="${g.id}" ${ui.goal===g.id?'selected':''}>G${g.id} · ${esc(g.short||g.title)}</option>`).join('')}</select>
+    <select class="fsel" id="fHealth"><option value="all">Any health</option>${Object.keys(HEALTH).map(h=>`<option value="${h}" ${ui.health===h?'selected':''}>${HEALTH[h].label}</option>`).join('')}</select>
+    ${(ui.owner!=='all'||ui.goal||ui.health!=='all'||ui.q)?'<button class="btn ghost sm" data-action="f-clear">Clear filters</button>':''}
+  </div>`;
+}
+
+/* ---------------------------- Render: workstreams ---------------------------- */
+function wsCard(w){
+  const s = wsStats(w), h = health(w), kp = kpiPct(w.kpi);
+  const next = s.next;
+  const stale = w.updatedAt && -daysFrom(w.updatedAt) > 14;
+  return `<div class="card ws ${h}" data-action="edit-ws" data-id="${w.id}">
+    <div class="ws-top"><h4>${esc(w.name)}</h4>${hPill(h)}</div>
+    <div class="row">${gChips(w.goals)}<div class="mdots">${w.milestones.map((m,i)=>`<span class="mdot ms-${m.status} ${msLate(m)?'late':''}" data-tip="${esc(msTip(m,w,i))}"></span>`).join('')}</div></div>
+    ${s.total? `<div><div class="row" style="margin-bottom:5px"><span>${s.done}/${s.total} milestones</span><b style="color:var(--ink)">${pct(s.progress)}</b></div>${bar(s,'thin')}</div>` : '<div class="row"><span>No milestones yet. Open it to add some.</span></div>'}
+    ${next? `<div class="next"><span style="color:var(--muted)">Next:</span><span style="flex:1;min-width:0">${esc(next.name)}</span><b style="${msLate(next)?'color:var(--h-off)':''}">${next.date?fmtShort(next.date):esc(next.note||'TBD')}</b></div>`:''}
+    ${kp!==null? `<div class="kpi-mini"><div class="top"><span>${esc(w.kpi.label||'KPI')}</span><b>${esc(w.kpi.current)}${esc(w.kpi.unit)} / ${esc(w.kpi.target)}${esc(w.kpi.unit)}</b></div><div class="bar thin"><span class="d" style="width:${kp*100}%;background:var(--brand-2)"></span></div></div>`:''}
+    <div class="row"><span class="${stale?'stale':''}">Updated ${relUpdated(w.updatedAt)}${w.updatedBy?' by '+esc(w.updatedBy):''}</span></div>
+  </div>`;
+}
+function renderWorkstreams(){
+  const list = filtered();
+  const el = document.getElementById('v-workstreams');
+  const ownersShown = owners().filter(o=>ui.owner==='all'||ui.owner===o.id);
+  el.innerHTML = `
+    <div class="page-head"><div><h2>Workstreams</h2><p>Each owner keeps their own cards up to date. Select a card to update status, dates, KPIs and asks.</p></div><div class="spacer"></div><button class="btn" data-action="add-owner">+ Add owner</button></div>
+    ${renderFilters()}
+    ${ownersShown.map(o=>{
+      const mine = list.filter(w=>w.owner===o.id);
+      const filteredOut = (ui.goal||ui.health!=='all'||ui.q) && !mine.length;
+      if(filteredOut) return '';
+      const r = rollup(wsAll().filter(w=>w.owner===o.id));
+      return `<section class="owner-sec">
+        <div class="owner-head">${avatar(o,36)}<div><h3>${esc(o.name)}</h3><div class="oarea">${esc(o.area)} · ${r.count} workstreams</div></div>${bar(r)}<b class="num">${pct(r.progress)}</b><span class="spacer" style="flex:1"></span>
+          <button class="btn sm" data-action="edit-owner" data-o="${o.id}">Edit owner &amp; asks</button></div>
+        <div class="ws-grid">${mine.map(wsCard).join('')}
+          ${(!ui.goal&&ui.health==='all'&&!ui.q)?`<button class="card ws add-card" data-action="add-ws" data-o="${o.id}">+ Add workstream</button>`:''}</div>
+      </section>`; }).join('') || '<div class="empty">No workstreams match these filters.</div>'}`;
+}
+
+/* ---------------------------- Render: timeline ---------------------------- */
+function tlWindow(){ const qi = qInfo(state.currentQuarter); const start = qi.start; const end = new Date(start.getFullYear(), start.getMonth()+6, 1); return {start,end,span:end-start}; }
+function tlPos(d, W){ return (d - W.start)/W.span*100; }
+function tlHeader(W){
+  let months = '', quarters = '';
+  for(let i=0;i<6;i++){
+    const a = new Date(W.start.getFullYear(), W.start.getMonth()+i, 1), b = new Date(W.start.getFullYear(), W.start.getMonth()+i+1, 1);
+    months += `<div class="tl-m" style="left:${tlPos(a,W)}%;width:${tlPos(b,W)-tlPos(a,W)}%">${MONTHS[a.getMonth()]}</div>`;
+    if(i%3===0){ const c = new Date(a.getFullYear(), a.getMonth()+3, 1); quarters += `<div class="tl-q" style="left:${tlPos(a,W)}%;width:${tlPos(c,W)-tlPos(a,W)}%">Q${Math.floor(a.getMonth()/3)+1} ${a.getFullYear()}</div>`; }
+  }
+  return months + quarters;
+}
+function tlGridLines(W){ let s=''; for(let i=1;i<6;i++){ const a = new Date(W.start.getFullYear(), W.start.getMonth()+i, 1); s += `<div class="tl-grid" style="left:${tlPos(a,W)}%"></div>`; } const t = tlPos(today(),W); if(t>=0&&t<=100) s += `<div class="tl-today" style="left:${t}%"></div>`; return s; }
+function tlTrack(w, W){
+  const dated = w.milestones.map((m,i)=>({m,i,d:parseD(m.date)})).filter(x=>x.d);
+  let out = tlGridLines(W);
+  if(dated.length>1){ const ps = dated.map(x=>Math.max(0,Math.min(100,tlPos(x.d,W)))); const a = Math.min(...ps), b = Math.max(...ps); out += `<div class="tl-span" style="left:${a}%;width:${b-a}%"></div>`; }
+  let before=0, after=0;
+  dated.forEach(x=>{
+    const p = tlPos(x.d,W);
+    if(p<0){ before++; return; } if(p>100){ after++; return; }
+    if(x.m.baseline && x.m.baseline!==x.m.date){ const bp = tlPos(parseD(x.m.baseline),W); if(bp>=0&&bp<=100){ const a=Math.min(bp,p), b=Math.max(bp,p); out += `<div class="tl-slip" style="left:${a}%;width:${b-a}%"></div><div class="tl-ghost" style="left:${bp}%"></div>`; } }
+    out += `<div class="tl-ms st-${x.m.status} ${msLate(x.m)?'late':''}" style="left:${p}%" data-action="edit-ws" data-id="${w.id}" data-tip="${esc(msTip(x.m,w,x.i))}">M${x.i+1}</div>`;
+  });
+  if(before) out += `<span class="tl-edge" style="left:2px">← ${before} earlier</span>`;
+  if(after) out += `<span class="tl-edge" style="right:2px">${after} later →</span>`;
+  return out;
+}
+function renderTimeline(){
+  const W = tlWindow(); const list = filtered();
+  const el = document.getElementById('v-timeline');
+  const t = tlPos(today(),W);
+  el.innerHTML = `
+    <div class="page-head"><div><h2>Portfolio milestone timeline</h2><p>${qInfo(state.currentQuarter).label} and the following quarter. Select any milestone or row to update it.</p></div></div>
+    ${renderFilters()}
+    <div class="card" style="overflow:hidden"><div class="tl-wrap"><div class="tl">
+      <div class="tl-head"><div class="lh">Owner · workstream</div><div class="tl-months">${tlHeader(W)}${t>=0&&t<=100?`<span class="tl-today-lbl" style="left:${t}%;top:auto;bottom:-9px;z-index:3">TODAY</span>`:''}</div></div>
+      ${owners().filter(o=>ui.owner==='all'||ui.owner===o.id).map(o=>{
+        const mine = list.filter(w=>w.owner===o.id); if(!mine.length) return '';
+        return `<div class="tl-group"><div class="gl">${avatar(o,24)}${esc(o.name)} <small>${esc(o.area)}</small></div><div class="tl-track">${tlGridLines(W)}</div></div>
+        ${mine.map(w=>{ const undated = w.milestones.filter(m=>!m.date && m.status!=='na').length; return `<div class="tl-row">
+          <div class="rl" data-action="edit-ws" data-id="${w.id}"><span class="hd" style="background:var(--h-${health(w)})" data-tip="${HEALTH[health(w)].label}"></span><span class="nm" title="${esc(w.name)}">${esc(w.name)}</span>${undated?`<span class="tl-tbd" data-tip="${undated} milestone(s) without a date">${undated} TBD</span>`:''}</div>
+          <div class="tl-track">${tlTrack(w,W)}</div></div>`; }).join('')}`;
+      }).join('') || '<div class="empty">No workstreams match these filters.</div>'}
+    </div></div></div>
+    <div class="legend" style="margin-top:12px">
+      <span><i class="mdot ms-done"></i>Done</span><span><i class="mdot ms-doing"></i>In progress</span><span><i class="mdot ms-todo"></i>Not started</span><span><i class="mdot ms-blocked"></i>Blocked</span>
+      <span><i class="mdot ms-todo late"></i>Overdue</span><span><i class="tl-ghost" style="position:static;margin:0;display:inline-block"></i>Original date (moved)</span>
+      <span><i style="width:2px;height:14px;background:var(--h-off);display:inline-block"></i>Today</span>
+    </div>`;
+}
+
+/* ---------------------------- Render: asks ---------------------------- */
+function renderAsks(){
+  const el = document.getElementById('v-asks');
+  el.innerHTML = `
+    <div class="page-head"><div><h2>Asks &amp; decisions</h2><p>What each area needs from leadership and partners to land the quarter. Useful as the agenda for the review meeting.</p></div></div>
+    <div class="asks">${owners().map(o=>{
+      const mine = wsAll().filter(w=>w.owner===o.id && w.needs);
+      const risky = mine.filter(w=>['risk','off'].includes(health(w)));
+      return `<div class="card ask-card"><div class="card-h">${avatar(o)}<div style="flex:1"><h3>${esc(o.name)}</h3><div class="oarea">${esc(o.area)}</div></div><button class="btn sm" data-action="edit-owner" data-o="${o.id}">Edit</button></div>
+        <div class="card-b">
+          ${o.needs?`<div class="ask-main">${esc(o.needs)}</div>`:'<div class="empty" style="padding:8px">No team-level ask yet.</div>'}
+          ${mine.sort((a,b)=>['off','risk','on','none','done'].indexOf(health(a))-['off','risk','on','none','done'].indexOf(health(b))).map(w=>`<div class="ask-ws" data-action="edit-ws" data-id="${w.id}" style="cursor:pointer"><b>${esc(w.name)} ${['risk','off'].includes(health(w))?hPill(health(w)):''}</b><span>${esc(w.needs)}</span></div>`).join('')}
+          ${risky.length?'':''}
+        </div></div>`; }).join('')}</div>`;
+}
+
+/* ---------------------------- Render all ---------------------------- */
+function render(){
+  renderHeader();
+  ({overview:renderOverview, timeline:renderTimeline, workstreams:renderWorkstreams, asks:renderAsks})[ui.tab]();
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===ui.tab));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.id==='v-'+ui.tab));
+}
+function go(tab){ ui.tab = tab; render(); window.scrollTo({top:0}); }
+
+/* ---------------------------- Drawer: edit workstream ---------------------------- */
+function openDrawer(html){ document.getElementById('drawer').innerHTML = html; document.getElementById('drawer').classList.add('open'); document.getElementById('scrim').classList.add('open'); }
+function openModal(html){ document.getElementById('modal').innerHTML = html; document.getElementById('modal').classList.add('open'); document.getElementById('scrim').classList.add('open'); }
+function closeAll(){ ['drawer','modal'].forEach(id=>document.getElementById(id).classList.remove('open')); document.getElementById('scrim').classList.remove('open'); ui.editing=null; }
+
+function msRow(m,i){
+  return `<div class="ms-ed" data-mid="${m.id}">
+    <div class="l1"><span class="tag">M${i+1}</span>
+      <input class="inp" data-f="name" value="${esc(m.name)}" placeholder="Milestone name">
+      <input class="inp inp-date" type="date" data-f="date" value="${esc(m.date)}" title="Target date">
+      <select class="inp inp-status" data-f="status">${Object.keys(STATUS).map(k=>`<option value="${k}" ${m.status===k?'selected':''}>${STATUS[k].label}</option>`).join('')}</select>
+      <button class="xbtn" data-action="ms-del" title="Remove milestone">${ICON_TRASH}</button></div>
+    <div class="l2"><span></span>
+      <div><label>Original date</label><input class="inp" type="date" data-f="baseline" value="${esc(m.baseline)}" title="Baseline date (used to show slips)"></div>
+      <div class="inp-note"><label>Note / date qualifier</label><input class="inp" data-f="note" value="${esc(m.note)}" placeholder="e.g. Planned, Q1 2027, waiting on MS"></div></div>
+  </div>`;
+}
+function editWs(id, newOwner){
+  let w = id ? wsAll().find(x=>x.id===id) : null;
+  const draft = w ? JSON.parse(JSON.stringify(w)) : {id:uid('ws'), owner:newOwner||owners()[0].id, name:'', goals:[], stands:'', needs:'', success:'', health:'auto', kpi:{label:'',unit:'',baseline:'',current:'',target:''}, milestones:[{id:uid('m'),name:'',date:'',baseline:'',status:'todo',note:''}], updatedAt:'', updatedBy:''};
+  ui.editing = {draft, isNew:!w};
+  const ah = autoHealth(draft);
+  openDrawer(`
+    <div class="dr-h">${avatar(ownerById(draft.owner),30)}<h3>${w?'Update workstream':'New workstream'}</h3><button class="xbtn" data-action="close">${ICON_X}</button></div>
+    <div class="dr-b" id="wsForm">
+      <div class="fsec">
+        <div class="fld"><label>Workstream name</label><input class="inp" id="f-name" value="${esc(draft.name)}" placeholder="e.g. Copilot Waves"></div>
+        <div class="frow">
+          <div class="fld"><label>Owner</label><select class="inp" id="f-owner">${owners().map(o=>`<option value="${o.id}" ${o.id===draft.owner?'selected':''}>${esc(o.name)} · ${esc(o.area)}</option>`).join('')}</select></div>
+          <div class="fld"><label>Health</label><select class="inp" id="f-health">
+            <option value="auto" ${draft.health==='auto'?'selected':''}>Automatic (currently: ${HEALTH[ah].label})</option>
+            <option value="on" ${draft.health==='on'?'selected':''}>On track</option><option value="risk" ${draft.health==='risk'?'selected':''}>At risk</option><option value="off" ${draft.health==='off'?'selected':''}>Off track</option><option value="done" ${draft.health==='done'?'selected':''}>Complete</option></select></div>
+        </div>
+        <div class="fld"><label>Contributes to goals</label><div class="gtoggle" id="f-goals">${state.goals.map(g=>`<button type="button" data-g="${g.id}" class="${draft.goals.includes(g.id)?'on':''}" style="${draft.goals.includes(g.id)?`background:var(--g${g.id});border-color:var(--g${g.id})`:''}" data-tip="${esc(g.title)}">G${g.id} · ${esc(g.short||'')}</button>`).join('')}</div></div>
+      </div>
+      <div class="fsec"><h5>Milestones</h5>
+        <div id="msList">${draft.milestones.map(msRow).join('')}</div>
+        <button class="btn sm" data-action="ms-add">+ Add milestone</button>
+        <div class="auto-note">Overdue = target date passed and not marked Done. If a target date moves, keep the original date so the timeline shows the slip.</div>
+      </div>
+      <div class="fsec"><h5>Status narrative</h5>
+        <div class="fld"><label>Where it stands</label><textarea class="inp" id="f-stands" rows="2">${esc(draft.stands)}</textarea></div>
+        <div class="fld"><label>What we need (asks, decisions, dependencies)</label><textarea class="inp" id="f-needs" rows="2">${esc(draft.needs)}</textarea></div>
+        <div class="fld"><label>Success looks like</label><textarea class="inp" id="f-success" rows="2">${esc(draft.success)}</textarea></div>
+      </div>
+      <div class="fsec"><h5>KPI (optional)</h5>
+        <div class="frow3">
+          <div class="fld" style="grid-column:span 2"><label>KPI name</label><input class="inp" id="k-label" value="${esc(draft.kpi.label)}" placeholder="e.g. Active makers"></div>
+          <div class="fld"><label>Unit</label><input class="inp" id="k-unit" value="${esc(draft.kpi.unit)}" placeholder="%, users, h"></div>
+          <div class="fld"><label>Baseline</label><input class="inp" id="k-baseline" type="number" value="${esc(draft.kpi.baseline)}"></div>
+          <div class="fld"><label>Target</label><input class="inp" id="k-target" type="number" value="${esc(draft.kpi.target)}"></div>
+          <div class="fld"><label>Current</label><input class="inp" id="k-current" type="number" value="${esc(draft.kpi.current)}"></div>
+        </div>
+      </div>
+      ${w?`<div class="auto-note">Last updated ${relUpdated(w.updatedAt)}${w.updatedBy?' by '+esc(w.updatedBy):''}.</div>`:''}
+    </div>
+    <div class="dr-f">
+      ${w?`<button class="btn ghost danger" data-action="ws-del">Delete</button>`:''}
+      <span class="spacer" style="flex:1"></span>
+      <input class="inp" id="f-user" placeholder="Your name" value="${esc(userName())}" style="width:130px">
+      <button class="btn" data-action="close">Cancel</button>
+      <button class="btn primary" data-action="ws-save">Save</button>
+    </div>`);
+  if(!w) setTimeout(()=>document.getElementById('f-name').focus(), 250);
+}
+function readMilestones(){
+  return [...document.querySelectorAll('#msList .ms-ed')].map(row=>{
+    const g = f=>row.querySelector(`[data-f="${f}"]`).value.trim();
+    const date = g('date'); let baseline = g('baseline');
+    return {id:row.dataset.mid, name:g('name')||'Untitled milestone', date, baseline: baseline||date, status:g('status'), note:g('note')};
+  }).filter(m=>m.name);
+}
+function saveWs(){
+  const d = ui.editing.draft; const v = id=>document.getElementById(id).value;
+  d.name = v('f-name').trim(); if(!d.name){ toast('Give the workstream a name'); document.getElementById('f-name').focus(); return; }
+  d.owner = v('f-owner'); d.health = v('f-health');
+  d.goals = [...document.querySelectorAll('#f-goals button.on')].map(b=>Number(b.dataset.g));
+  d.stands = v('f-stands').trim(); d.needs = v('f-needs').trim(); d.success = v('f-success').trim();
+  d.kpi = {label:v('k-label').trim(), unit:v('k-unit').trim(), baseline:v('k-baseline'), target:v('k-target'), current:v('k-current')};
+  d.milestones = readMilestones();
+  const who = v('f-user').trim(); if(who) setUserName(who);
+  d.updatedAt = iso(today()); d.updatedBy = who;
+  const list = wsAll(); const i = list.findIndex(x=>x.id===d.id);
+  if(i>=0) list[i] = d; else list.push(d);
+  save(); closeAll(); render(); toast('Saved — dashboard updated');
+}
+
+/* ---------------------------- Owner / settings / quarter modals ---------------------------- */
+function editOwner(id){
+  const o = id ? owners().find(x=>x.id===id) : {id:'', name:'', area:'', needs:''};
+  openModal(`<div class="dr-h"><h3>${id?'Edit owner':'Add owner'}</h3><button class="xbtn" data-action="close">${ICON_X}</button></div>
+    <div class="dr-b">
+      <div class="frow"><div class="fld"><label>Name</label><input class="inp" id="o-name" value="${esc(o.name)}"></div><div class="fld"><label>Area / team</label><input class="inp" id="o-area" value="${esc(o.area)}"></div></div>
+      <div class="fld"><label>Team-level asks for leadership</label><textarea class="inp" id="o-needs" rows="5">${esc(o.needs)}</textarea></div>
+    </div>
+    <div class="dr-f">${id?'<button class="btn ghost danger" data-action="owner-del" data-o="'+id+'">Remove owner</button>':''}<span style="flex:1"></span><button class="btn" data-action="close">Cancel</button><button class="btn primary" data-action="owner-save" data-o="${id}">Save</button></div>`);
+}
+function saveOwner(id){
+  const name = document.getElementById('o-name').value.trim(); if(!name){ toast('Name is required'); return; }
+  const data = {name, area:document.getElementById('o-area').value.trim(), needs:document.getElementById('o-needs').value.trim()};
+  if(id){ Object.assign(owners().find(x=>x.id===id), data); }
+  else { owners().push(Object.assign({id:uid('o')}, data)); }
+  save(); closeAll(); render(); toast('Owner saved');
+}
+function deleteOwner(id){
+  const n = wsAll().filter(w=>w.owner===id).length;
+  if(!confirm(`Remove this owner${n?` and their ${n} workstreams`:''} from ${qInfo(state.currentQuarter).label}?`)) return;
+  Q().owners = owners().filter(o=>o.id!==id); Q().workstreams = wsAll().filter(w=>w.owner!==id);
+  if(ui.owner===id) ui.owner='all';
+  save(); closeAll(); render(); toast('Owner removed');
+}
+function openSettings(){
+  openModal(`<div class="dr-h"><h3>Goals &amp; settings</h3><button class="xbtn" data-action="close">${ICON_X}</button></div>
+    <div class="dr-b">
+      <div class="fsec"><h5>Dashboard</h5><div class="frow"><div class="fld"><label>Title</label><input class="inp" id="s-title" value="${esc(state.title)}"></div><div class="fld"><label>Subtitle</label><input class="inp" id="s-sub" value="${esc(state.subtitle)}"></div></div></div>
+      <div class="fsec"><h5>The six goals (shared across all quarters)</h5>
+        ${state.goals.map(g=>`<div class="goal-ed"><div class="gh"><span class="gchip" style="background:var(--g${g.id})">G${g.id}</span><input class="inp" data-g="${g.id}" data-f="short" value="${esc(g.short)}" style="width:130px" placeholder="Short label"></div>
+          <div class="fld"><label>Title</label><input class="inp" data-g="${g.id}" data-f="title" value="${esc(g.title)}"></div>
+          <div class="fld"><label>Success measure</label><input class="inp" data-g="${g.id}" data-f="measure" value="${esc(g.measure)}"></div></div>`).join('')}
+      </div>
+      <div class="fsec"><h5>Team</h5><div style="display:flex;gap:6px;flex-wrap:wrap">${owners().map(o=>`<button class="chip" data-action="edit-owner" data-o="${o.id}">${esc(o.name)}</button>`).join('')}<button class="chip" data-action="add-owner">+ Add owner</button></div></div>
+    </div>
+    <div class="dr-f"><span style="flex:1"></span><button class="btn" data-action="close">Cancel</button><button class="btn primary" data-action="settings-save">Save</button></div>`);
+}
+function saveSettings(){
+  state.title = document.getElementById('s-title').value.trim() || state.title;
+  state.subtitle = document.getElementById('s-sub').value.trim();
+  document.querySelectorAll('#modal [data-g][data-f]').forEach(inp=>{ const g = goalById(Number(inp.dataset.g)); g[inp.dataset.f] = inp.value.trim(); });
+  save(); closeAll(); render(); toast('Settings saved');
+}
+function openNewQuarter(){
+  let key = nextQKey(state.currentQuarter); while(state.quarters[key]) key = nextQKey(key);
+  const open = wsAll().filter(w=>health(w)!=='done').length;
+  openModal(`<div class="dr-h"><h3>Start ${qInfo(key).label}</h3><button class="xbtn" data-action="close">${ICON_X}</button></div>
+    <div class="dr-b">
+      <p style="margin-top:0">Creates a new quarter with the same team and goals. ${qInfo(state.currentQuarter).label} stays available in the quarter picker as a record.</p>
+      <label style="display:flex;gap:10px;align-items:flex-start;margin:14px 0"><input type="checkbox" id="nq-carry" checked style="margin-top:3px"><span><b>Carry over open work</b><br><span class="li-s">Copies the ${open} workstreams that aren't complete, with only their unfinished milestones. Each owner then refreshes dates and adds new milestones.</span></span></label>
+    </div>
+    <div class="dr-f"><span style="flex:1"></span><button class="btn" data-action="close">Cancel</button><button class="btn primary" data-action="nq-create" data-k="${key}">Create ${qInfo(key).label}</button></div>`);
+}
+function createQuarter(key){
+  const carry = document.getElementById('nq-carry').checked;
+  const src = Q();
+  const nq = {owners: JSON.parse(JSON.stringify(src.owners)), workstreams: []};
+  if(carry){
+    nq.workstreams = JSON.parse(JSON.stringify(src.workstreams.filter(w=>health(w)!=='done'))).map(w=>{
+      w.id = uid('ws'); w.milestones = w.milestones.filter(m=>m.status!=='done' && m.status!=='na').map(m=>Object.assign(m,{id:uid('m')}));
+      w.health = 'auto'; w.updatedAt = iso(today()); w.updatedBy = 'Carried over'; return w; });
+  }
+  state.quarters[key] = nq; state.currentQuarter = key;
+  save(); closeAll(); render(); toast(qInfo(key).label+' created');
+}
+
+/* ---------------------------- Export / import ---------------------------- */
+function download(name, text, type){ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text],{type})); a.download = name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+function exportJSON(){ download(`coe-priorities-${iso(today())}.json`, JSON.stringify(state,null,2), 'application/json'); toast('Exported. Share this file with the team.'); }
+function exportCSV(){
+  const rows = [['Quarter','Owner','Area','Workstream','Goals','Health','Milestone','Original date','Target date','Status','Overdue','Note','Updated','Updated by']];
+  wsAll().forEach(w=>{ const o = ownerById(w.owner); (w.milestones.length? w.milestones : [null]).forEach((m,i)=>rows.push([qInfo(state.currentQuarter).label,o.name,o.area,w.name,w.goals.map(g=>'G'+g).join(' '),HEALTH[health(w)].label, m?('M'+(i+1)+': '+m.name):'', m?m.baseline:'', m?m.date:'', m?STATUS[m.status].label:'', m&&msLate(m)?'Yes':'', m?m.note:'', w.updatedAt||'', w.updatedBy||''])); });
+  download(`coe-milestones-${state.currentQuarter}.csv`, rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n'), 'text/csv');
+}
+function importJSON(file){
+  const r = new FileReader();
+  r.onload = ()=>{ try{ const s = JSON.parse(r.result); if(!s.quarters||!s.goals) throw 0; if(!confirm('Replace the data in this browser with the imported file?')) return; state = s; save(); render(); toast('Data imported'); }catch(e){ toast('That file is not a valid export'); } };
+  r.readAsText(file);
+}
+
+/* ---------------------------- Presentation mode ---------------------------- */
+function slideFoot(i,n){ return `<div class="foot"><span>${esc(state.title)} · ${qInfo(state.currentQuarter).label}</span><span>${i+1} / ${n}</span></div>`; }
+function buildSlides(){
+  const all = wsAll(), R = rollup(all), qi = qInfo(state.currentQuarter);
+  const late = lateList(), soon = soonList(21);
+  const S = [];
+  S.push(`<div class="slide s-title"><div class="kicker">${esc(state.title)}</div><h2>Strategic priorities &amp; delivery progress</h2><p class="lead">${qi.label} leadership review · as of ${fmtD(iso(today()),true)}</p>
+    <div class="s-stats"><div class="s-stat"><div class="v">${pct(R.progress)}</div><div class="l">milestones complete (${R.done}/${R.total})</div></div><div class="s-stat"><div class="v">${all.length}</div><div class="l">workstreams across ${owners().length} areas</div></div><div class="s-stat"><div class="v">${R.h.on+R.h.done}</div><div class="l">on track or complete</div></div><div class="s-stat"><div class="v" style="color:#ffb3ad">${R.h.risk+R.h.off}</div><div class="l">at risk or off track</div></div></div>
+    <div class="team">${owners().map(o=>`<span>${esc(o.name)} · ${esc(o.area)}</span>`).join('')}</div></div>`);
+  S.push(`<div class="slide"><div class="kicker">Six goals</div><h2>Progress toward the CoE goals</h2><p class="lead">Share of milestones complete across all workstreams contributing to each goal.</p>
+    <div class="s-goals">${state.goals.map(g=>{ const r = goalRollup(g.id); return `<div class="s-goal">${ring(r.progress,'var(--g'+g.id+')',64,7,'rgba(255,255,255,.1)')}<div><div class="kicker" style="color:var(--g${g.id});filter:brightness(1.6)">Goal ${g.id}</div><h4>${esc(g.title)}</h4><div class="m">${r.count} workstreams · ${r.done}/${r.total} milestones${r.late?` · ${r.late} overdue`:''}</div></div></div>`; }).join('')}</div></div>`);
+  S.push(`<div class="slide"><div class="kicker">Portfolio health</div><h2>Where each area stands</h2><p class="lead">Milestone completion and workstream health by owner.</p>
+    <div class="s-owner-bars">${owners().map(o=>{ const r = rollup(all.filter(w=>w.owner===o.id)); return `<div class="s-ob"><div class="nm">${esc(o.name)}<small>${esc(o.area)}</small></div>${bar(r)}<div class="pc">${pct(r.progress)}</div><div style="display:flex;gap:.4em;flex-wrap:wrap">${['on','risk','off','done'].filter(h=>r.h[h]).map(h=>`<span class="pill h-${h}"><i></i>${r.h[h]} ${HEALTH[h].label.toLowerCase()}</span>`).join('')}</div></div>`; }).join('')}</div></div>`);
+  S.push(`<div class="slide"><div class="kicker">Focus</div><h2>What needs attention and what's next</h2><p class="lead">${late.length} milestones past their target date · ${soon.length} due in the next 3 weeks.</p>
+    <div class="s-cols" style="grid-template-columns:1fr 1fr"><div class="s-box"><h5>Overdue / needs update</h5><div class="s-list">${late.slice(0,8).map(x=>msLi(x,true)).join('')||'<p>Nothing overdue.</p>'}${late.length>8?`<p class="s">+ ${late.length-8} more</p>`:''}</div></div>
+    <div class="s-box"><h5>Coming up · next 3 weeks</h5><div class="s-list">${soon.slice(0,8).map(x=>msLi(x,true)).join('')||'<p>No milestones due.</p>'}${soon.length>8?`<p class="s">+ ${soon.length-8} more</p>`:''}</div></div></div></div>`);
+  owners().forEach(o=>{
+    const mine = all.filter(w=>w.owner===o.id); const r = rollup(mine);
+    S.push(`<div class="slide"><div class="kicker">${esc(o.area)}</div><h2>${esc(o.name)} · ${mine.length} workstreams, ${pct(r.progress)} complete</h2><p class="lead">${r.h.on+r.h.done} on track or complete · ${r.h.risk+r.h.off} at risk or off track</p>
+      <div class="s-cols"><div style="overflow:hidden"><table class="s-table"><thead><tr><th>Workstream</th><th>Goals</th><th>Progress</th><th>Next milestone</th><th>Health</th></tr></thead><tbody>
+      ${mine.map(w=>{ const s = wsStats(w); return `<tr><td class="n">${esc(w.name)}</td><td>${gChips(w.goals)}</td><td>${s.total?`${bar(s)}<div class="sub">${s.done}/${s.total}</div>`:'<span class="sub">—</span>'}</td><td>${s.next?`${esc(s.next.name)}<div class="sub" style="${msLate(s.next)?'color:#ffb3ad':''}">${s.next.date?fmtD(s.next.date):esc(s.next.note||'TBD')}${msLate(s.next)?' · overdue':''}</div>`:'<span class="sub">—</span>'}</td><td>${hPill(health(w))}</td></tr>`; }).join('')}
+      </tbody></table></div><div class="s-box"><h5>What we need</h5><p>${esc(o.needs||'—')}</p></div></div></div>`);
+  });
+  S.push(`<div class="slide"><div class="kicker">Decisions</div><h2>Asks for leadership</h2><p class="lead">Consolidated from each area.</p>
+    <div class="s-goals" style="grid-template-columns:repeat(3,1fr)">${owners().map(o=>`<div class="s-box"><h5>${esc(o.name)} · ${esc(o.area)}</h5><p style="font-size:.82em;display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden">${esc(o.needs||'—')}</p></div>`).join('')}</div></div>`);
+  return S.map((s,i)=>s.replace(/<\/div>$/, slideFoot(i,S.length)+'</div>'));
+}
+let SLIDES = [];
+function openPresent(){ SLIDES = buildSlides(); ui.pzIndex = 0; document.getElementById('present').classList.add('open'); document.getElementById('pzTitle').textContent = state.title+' · '+qInfo(state.currentQuarter).label; showSlide(); try{ document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }catch(e){} }
+function closePresent(){ document.getElementById('present').classList.remove('open'); try{ document.fullscreenElement && document.exitFullscreen(); }catch(e){} }
+function showSlide(){
+  ui.pzIndex = Math.max(0, Math.min(SLIDES.length-1, ui.pzIndex));
+  document.getElementById('pzStage').innerHTML = SLIDES[ui.pzIndex];
+  document.getElementById('pzCount').textContent = (ui.pzIndex+1)+' / '+SLIDES.length;
+  document.getElementById('pzDots').innerHTML = SLIDES.map((_,i)=>`<button class="${i===ui.pzIndex?'on':''}" data-action="pz-go" data-i="${i}" aria-label="Slide ${i+1}"></button>`).join('');
+}
+function printDeck(){ document.getElementById('print-root').innerHTML = buildSlides().join(''); setTimeout(()=>window.print(), 50); }
+
+/* ---------------------------- Toast & tooltip ---------------------------- */
+let toastT; function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('show'), 2200); }
+const tip = document.getElementById('tip');
+document.addEventListener('mouseover', e=>{ const t = e.target.closest('[data-tip]'); if(!t){ tip.classList.remove('show'); return; } tip.innerHTML = t.dataset.tip; tip.classList.add('show'); });
+document.addEventListener('mousemove', e=>{ if(!tip.classList.contains('show')) return; const x = Math.min(e.clientX+14, window.innerWidth - tip.offsetWidth - 10), y = e.clientY+16 + tip.offsetHeight > window.innerHeight ? e.clientY - tip.offsetHeight - 10 : e.clientY+16; tip.style.left = x+'px'; tip.style.top = y+'px'; });
+
+/* ---------------------------- Events ---------------------------- */
+document.addEventListener('click', e=>{
+  const menu = document.getElementById('menu');
+  if(!e.target.closest('.menu-wrap')) menu.classList.remove('open');
+  const tab = e.target.closest('.tab'); if(tab){ go(tab.dataset.tab); return; }
+  const gbtn = e.target.closest('#f-goals button'); if(gbtn){ gbtn.classList.toggle('on'); const g = gbtn.dataset.g; gbtn.style.background = gbtn.classList.contains('on')?`var(--g${g})`:''; gbtn.style.borderColor = gbtn.classList.contains('on')?`var(--g${g})`:''; return; }
+  const a = e.target.closest('[data-action]'); if(!a) return;
+  const act = a.dataset.action;
+  switch(act){
+    case 'menu': menu.classList.toggle('open'); break;
+    case 'present': openPresent(); break;
+    case 'pz-close': closePresent(); break;
+    case 'pz-next': ui.pzIndex++; showSlide(); break;
+    case 'pz-prev': ui.pzIndex--; showSlide(); break;
+    case 'pz-go': ui.pzIndex = Number(a.dataset.i); showSlide(); break;
+    case 'pz-print': case 'print': menu.classList.remove('open'); printDeck(); break;
+    case 'edit-ws': editWs(a.dataset.id); break;
+    case 'add-ws': editWs(null, a.dataset.o); break;
+    case 'ws-save': saveWs(); break;
+    case 'ws-del': if(confirm('Delete this workstream?')){ Q().workstreams = wsAll().filter(w=>w.id!==ui.editing.draft.id); save(); closeAll(); render(); toast('Workstream deleted'); } break;
+    case 'ms-add': { const list = document.getElementById('msList'); const i = list.children.length; list.insertAdjacentHTML('beforeend', msRow({id:uid('m'),name:'',date:'',baseline:'',status:'todo',note:''}, i)); list.lastElementChild.querySelector('input').focus(); break; }
+    case 'ms-del': { a.closest('.ms-ed').remove(); document.querySelectorAll('#msList .ms-ed .tag').forEach((t,i)=>t.textContent='M'+(i+1)); break; }
+    case 'close': closeAll(); break;
+    case 'goal': ui.goal = Number(a.dataset.g); ui.owner='all'; ui.health='all'; go('workstreams'); break;
+    case 'owner': ui.owner = a.dataset.o; ui.goal=0; ui.health='all'; go('workstreams'); break;
+    case 'filter-health': ui.health = a.dataset.h; ui.owner='all'; ui.goal=0; go('workstreams'); break;
+    case 'f-owner': ui.owner = a.dataset.o; render(); break;
+    case 'f-clear': ui.owner='all'; ui.goal=0; ui.health='all'; ui.q=''; render(); break;
+    case 'edit-owner': editOwner(a.dataset.o); break;
+    case 'add-owner': editOwner(null); break;
+    case 'owner-save': saveOwner(a.dataset.o); break;
+    case 'owner-del': deleteOwner(a.dataset.o); break;
+    case 'settings': menu.classList.remove('open'); openSettings(); break;
+    case 'settings-save': saveSettings(); break;
+    case 'new-quarter': menu.classList.remove('open'); openNewQuarter(); break;
+    case 'nq-create': createQuarter(a.dataset.k); break;
+    case 'export': menu.classList.remove('open'); exportJSON(); break;
+    case 'csv': menu.classList.remove('open'); exportCSV(); break;
+    case 'import': menu.classList.remove('open'); document.getElementById('fileIn').click(); break;
+    case 'reset': menu.classList.remove('open'); if(confirm('Reset all data to the original Q4 2026 deck? Your edits in this browser will be lost (export first if needed).')){ state = seed(); save(); render(); toast('Reset to deck data'); } break;
+  }
+});
+document.getElementById('scrim').addEventListener('click', closeAll);
+document.getElementById('fileIn').addEventListener('change', e=>{ if(e.target.files[0]) importJSON(e.target.files[0]); e.target.value=''; });
+document.getElementById('qSel').addEventListener('change', e=>{ state.currentQuarter = e.target.value; ui.owner='all'; save(); render(); });
+document.addEventListener('input', e=>{ if(e.target.id==='fSearch'){ ui.q = e.target.value; const pos = e.target.selectionStart; render(); const s = document.getElementById('fSearch'); s.focus(); s.setSelectionRange(pos,pos); } });
+document.addEventListener('change', e=>{ if(e.target.id==='fGoal'){ ui.goal = Number(e.target.value); render(); } if(e.target.id==='fHealth'){ ui.health = e.target.value; render(); } });
+document.addEventListener('keydown', e=>{
+  if(document.getElementById('present').classList.contains('open')){
+    if(['ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); ui.pzIndex++; showSlide(); }
+    else if(['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); ui.pzIndex--; showSlide(); }
+    else if(e.key==='Escape') closePresent();
+    else if(e.key==='Home'){ ui.pzIndex=0; showSlide(); } else if(e.key==='End'){ ui.pzIndex=SLIDES.length-1; showSlide(); }
+    return;
+  }
+  if(e.key==='Escape') closeAll();
+  if((e.metaKey||e.ctrlKey) && e.key==='s' && ui.editing){ e.preventDefault(); saveWs(); }
+});
+document.addEventListener('fullscreenchange', ()=>{ if(!document.fullscreenElement && document.getElementById('present').classList.contains('open')){ /* stay in overlay; Esc again exits */ } });
+
+render();
+})();
+</script>
+</body>
+</html>
